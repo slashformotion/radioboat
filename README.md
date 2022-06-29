@@ -34,11 +34,11 @@ radioboat
 ```
 Then, follow the intruction at the bottom of the screen.
 
-![](..github/assets/screencast.gif)
+![](https://raw.githubusercontent.com/slashformotion/radioboat/master/.github/assets/screencast.gif)
 
 ## Dependencies
 
-- [mpv](https://mpv/io) (although this programm could be adapted easily to use other tools capable of reading audo streams)
+- [mpv](https://mpv/io) (although this programm could be adapted easily to use other tools capable of reading audio streams)
 - Various golang libraries: see [go.mod](https://github.com/slashformotion/radioboat/blob/master/go.mod)
 
 
