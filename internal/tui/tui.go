@@ -97,14 +97,18 @@ func (m model) View() string {
 
 	return s
 }
-func InitialModel(p players.RadioPlayer, stations []*urls.Station) model {
+func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int) model {
 	m := model{
 		player:   p,
 		stations: stations,
-		dj:       Dj{current: "Not Playing"},
-		help:     help.New(),
+		dj: Dj{
+			current: "Not Playing",
+			volume:  volume,
+		},
+		help: help.New(),
 	}
 	m.player.Init()
+	m.player.SetVolume(volume)
 	m.dj.volume = m.player.Volume()
 	m.dj.muted = m.player.IsMute()
 
