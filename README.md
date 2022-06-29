@@ -26,7 +26,7 @@ go install
 ```
 ## How to Use ? 
 
-- Copy the sample [stations.csv](https://github.com/slashformotion/radioboat/blob/master/go.mod) to ~/.config/radioboat/urls.csv.
+- Copy the sample [stations.csv](https://github.com/slashformotion/radioboat/blob/master/stations.csv) to ~/.config/radioboat/urls.csv.
 - Add the audio stream of your choice and give them a name
 - Launch the program:
 ```bash
