@@ -10,13 +10,22 @@ import (
 // lsCmd represents the ls command
 var lsCmd = &cobra.Command{
 	Use:   "edit",
-	Short: "Edit the urls.csv file in $EDITOR",
-	Long: `Edit the urls.csv file in $EDITOR. 
-You need to have the EDITOR env variable set up.`,
+	Short: "Edit the urls.csv file in $RADIOBOAT_EDITOR or $EDITOR or vim",
+	Long: `Edit the urls.csv file in $RADIOBOAT_EDITOR or $EDITOR or vim. 
+
+You need to have correct environment variables set up. 
+To do that please head to the wiki: https://github.com/slashformotion/radioboat/wiki/Configuration`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// editor = osutil.GetOptEnv("EDITOR"))
 		// cm := exec.Command("nvim", urlFilePath, "</dev/tty")
-		cm := exec.Command("nvim", urlFilePath)
+		prefEditor := os.Getenv("RADIOBOAT_EDITOR")
+		editor := os.Getenv("EDITOR")
+		if prefEditor != "" {
+			editor = prefEditor
+		} else if editor == "" {
+			editor = "vim"
+		}
+		cm := exec.Command(editor, urlFilePath)
 		cm.Stdin = os.Stdin
 		cm.Stdout = os.Stdout
 		cm.Stderr = os.Stderr
