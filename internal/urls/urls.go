@@ -2,6 +2,7 @@ package urls
 
 import (
 	"os"
+	"strings"
 
 	"github.com/gocarina/gocsv"
 )
@@ -24,6 +25,10 @@ func ParseUrlFile(filename string) ([]*Station, error) {
 
 	if err := gocsv.UnmarshalFile(clientsFile, &stations); err != nil { // Load clients from file
 		panic(err)
+	}
+	for _, s := range stations {
+		s.Url = strings.TrimSpace(s.Url)
+		s.Name = strings.TrimSpace(s.Name)
 	}
 	return stations, nil
 }
