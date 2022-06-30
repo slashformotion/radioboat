@@ -14,6 +14,8 @@
 
 **Radioboat is a terminal web radio client, built with simplicity in mind**
 
+![](https://raw.githubusercontent.com/slashformotion/radioboat/master/.github/assets/screencast.gif)
+
 ## Installation
 
 You need a functional [go setup](https://go.dev/doc/install).
@@ -35,8 +37,6 @@ go install
 radioboat
 ```
 Then, follow the intruction at the bottom of the screen.
-
-![](https://raw.githubusercontent.com/slashformotion/radioboat/master/.github/assets/screencast.gif)
 
 ## Dependencies
 
