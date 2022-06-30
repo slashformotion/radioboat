@@ -14,6 +14,7 @@ import (
 
 var urlFilePath string
 var volume int
+var playerName string
 
 var rootCmd = &cobra.Command{
 	Use:     "radioboat",
@@ -35,6 +36,7 @@ func Execute() {
 
 	rootCmd.PersistentFlags().StringVarP(&urlFilePath, "url-file", "u", hm+"/.config/radioboat/urls.csv", "Use an alternative URL file")
 	rootCmd.Flags().IntVar(&volume, "volume", 80, "Set the volume when the application is launched")
+	rootCmd.Flags().StringVar(&playerName, "player", "mpv", "Set the player to be used")
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -48,7 +50,12 @@ func ui() {
 		panic(err)
 	}
 
-	var player players.RadioPlayer = &players.MpvPlayer{}
+	var player players.RadioPlayer
+	player, err = players.Get_player(playerName)
+	if err != nil {
+		panic(err)
+	}
+
 	p := tea.NewProgram(tui.InitialModel(player, stations, volume), tea.WithAltScreen())
 	if err := p.Start(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)

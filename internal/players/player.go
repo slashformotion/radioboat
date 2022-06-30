@@ -1,5 +1,16 @@
 package players
 
+import (
+	"fmt"
+)
+
+func Get_player(name string) (RadioPlayer, error) {
+	if name == "mpv" {
+		return &MpvPlayer{}, nil
+	}
+	return nil, fmt.Errorf("%q provider does not exists", name)
+}
+
 type RadioPlayer interface {
 	Init() error
 	Play(stream_url string)
