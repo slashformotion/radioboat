@@ -26,6 +26,8 @@ go install
 ```
 ## How to Use ? 
 
+> please head to the [wiki](https://github.com/slashformotion/radioboat/wiki) for more information  
+
 - Copy the sample [stations.csv](https://github.com/slashformotion/radioboat/blob/master/stations.csv) to ~/.config/radioboat/urls.csv.
 - Add the audio stream of your choice and give them a name
 - Launch the program:
