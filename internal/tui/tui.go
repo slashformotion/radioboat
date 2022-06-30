@@ -40,9 +40,10 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		// If we set a width on the help menu it can it can gracefully truncate
-		// its view as needed.
 		m.help.Width = msg.Width
+		//lets change the width of evry thing we need
+		header_s = header_s.Width(msg.Width)
+
 	case tea.KeyMsg:
 
 		switch {
@@ -77,7 +78,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 func (m model) View() string {
-	s := m.dj.ToString()
+	s := header_s.Render(m.dj.ToString())
 	s += "\n\n"
 
 	// Iterate over our choices
@@ -85,17 +86,22 @@ func (m model) View() string {
 
 		// Is the cursor pointing at this choice?
 		cursor := " " // no cursor
+		name := station.Name
 		if m.cursor == i {
 			cursor = ">" // cursor!
+			name = list_selected_s.Render(station.Name)
+		}
+		if m.dj.current == station.Name {
+			name = list_selected_s.Copy().Italic(true).Bold(false).Render(station.Name)
 		}
 
 		// Render the row
-		s += fmt.Sprintf("%s %s\n", cursor, station.Name)
+		s += fmt.Sprintf("%s %s\n", cursor, name)
 	}
 	helpView := m.help.View(DefaultKeyMap)
 	s += "\n\n" + helpView
 
-	return s
+	return docStyle.Render(s)
 }
 func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int) model {
 	m := model{
