@@ -3,6 +3,7 @@ package players
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 	"syscall"
 	"time"
 
@@ -14,6 +15,7 @@ type MpvPlayer struct {
 	socketname string
 	ipcc       *mpv.IPCClient
 	client     *mpv.Client
+	url        string
 }
 
 func (m *MpvPlayer) Init() error {
@@ -36,6 +38,7 @@ func (m *MpvPlayer) Init() error {
 }
 func (m *MpvPlayer) Play(stream_url string) {
 	m.client.Loadfile(stream_url, mpv.LoadFileModeReplace)
+	m.url = stream_url
 }
 func (m *MpvPlayer) Mute() {
 	err := m.client.SetMute(true)
@@ -104,5 +107,12 @@ func (m *MpvPlayer) Close() {
 
 func (m *MpvPlayer) NowPlaying() string {
 	str, _ := m.client.GetProperty("media-title")
+	if str == "<nil>" {
+		return ""
+	}
+	str = str[1 : len(str)-2]
+	if strings.Contains(m.url, str) {
+		return ""
+	}
 	return str
 }

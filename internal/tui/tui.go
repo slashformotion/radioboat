@@ -2,6 +2,8 @@ package tui
 
 import (
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -15,17 +17,20 @@ var width int
 var height int
 
 type model struct {
-	stations []*urls.Station
-	cursor   int
-	player   players.RadioPlayer
-	help     help.Model
-	dj       Dj
+	stations      []*urls.Station
+	cursor        int
+	player        players.RadioPlayer
+	help          help.Model
+	dj            Dj
+	trackFilePath string
+	err           error
 }
 
 type Dj struct {
 	currentStation string
 	muted          bool
 	volume         int
+	currentTrack   string
 }
 
 func HeaderToString(currentStation string, trackName string, volume int, muted bool) string {
@@ -47,11 +52,19 @@ func HeaderToString(currentStation string, trackName string, volume int, muted b
 
 func (m model) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
-	return nil
+	return CmdTickerTrackname
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case SaveTrackMsg:
+		if msg.err != nil {
+			m.err = msg.err
+			return m, nil
+		}
+	case Tick:
+		m.dj.currentTrack = m.player.NowPlaying()
+		return m, CmdTickerTrackname
 	case tea.WindowSizeMsg:
 		width = msg.Width
 		height = msg.Height
@@ -84,6 +97,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, DefaultKeyMap.VolumeDown):
 			m.player.DecVolume()
 			m.dj.volume = m.player.Volume()
+		case key.Matches(msg, DefaultKeyMap.SaveTrack):
+			return m, CmdSaveTrack(m.trackFilePath, m.player.NowPlaying())
 		}
 	}
 
@@ -91,7 +106,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := HeaderToString(m.dj.currentStation, m.player.NowPlaying(), m.dj.volume, m.dj.muted)
+	s := HeaderToString(m.dj.currentStation, m.dj.currentTrack, m.dj.volume, m.dj.muted)
+	if m.err != nil {
+		s += lipgloss.NewStyle().Foreground(lipgloss.Color("#FF5F87")).Render("An Error happened: "+m.err.Error()) + "\n\n"
+	}
 	// Iterate over our choices
 	for i, station := range m.stations {
 
@@ -112,7 +130,7 @@ func (m model) View() string {
 
 	return docStyle.Render(s)
 }
-func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int) model {
+func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, trackFilePath string) model {
 	m := model{
 		player:   p,
 		stations: stations,
@@ -120,7 +138,8 @@ func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int) m
 			currentStation: "Not Playing",
 			volume:         volume,
 		},
-		help: help.New(),
+		help:          help.New(),
+		trackFilePath: trackFilePath,
 	}
 	m.player.Init()
 	m.player.SetVolume(volume)
@@ -129,4 +148,39 @@ func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int) m
 
 	// m.help.ShowAll = true
 	return m
+}
+
+// wait 1 sec and then send a Tick
+func CmdTickerTrackname() tea.Msg {
+	time.Sleep(time.Second)
+	return Tick{}
+}
+
+// tea.Msg send by CmdTickerTrackname
+type Tick struct{}
+
+func CmdSaveTrack(trackFilePath, track string) tea.Cmd {
+	return func() tea.Msg {
+		var msg SaveTrackMsg = SaveTrackMsg{err: nil}
+		if track == "" {
+			return msg
+		}
+		trackFile, err := os.OpenFile(trackFilePath, os.O_APPEND|os.O_WRONLY, os.ModePerm)
+		if err != nil {
+			msg.err = err
+			return msg
+		}
+		defer trackFile.Close()
+		_, err = fmt.Fprintf(trackFile, "%s\n", track)
+		if err != nil {
+			msg.err = err
+			return msg
+		}
+		return msg
+	}
+}
+
+// tea.Msg send by CmdSaveTrack
+type SaveTrackMsg struct {
+	err error
 }

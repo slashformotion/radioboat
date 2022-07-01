@@ -10,12 +10,14 @@ import (
 	"github.com/slashformotion/radioboat/internal/players"
 	"github.com/slashformotion/radioboat/internal/tui"
 	"github.com/slashformotion/radioboat/internal/urls"
+	"github.com/slashformotion/radioboat/internal/utils"
 	"github.com/spf13/cobra"
 )
 
 var urlFilePath string
 var volume int
 var playerName string
+var trackFilePath string
 
 var rootCmd = &cobra.Command{
 	Use:     "radioboat",
@@ -38,6 +40,7 @@ func Execute() {
 	rootCmd.PersistentFlags().StringVarP(&urlFilePath, "url-file", "u", hm+"/.config/radioboat/urls.csv", "Use an alternative URL file")
 	rootCmd.Flags().IntVar(&volume, "volume", 80, "Set the volume when the application is launched")
 	rootCmd.Flags().StringVar(&playerName, "player", "mpv", "Set the player to be used")
+	rootCmd.Flags().StringVarP(&trackFilePath, "track-file", "t", hm+"/.tracks", "Use an alternative track text file")
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -54,7 +57,7 @@ func ui() {
 		} else if os.IsPermission(err) {
 			fmt.Printf("Looks like you don't have the permission to access the url file: %q\n", urlFilePath)
 			os.Exit(1)
-		} else if errors.Is(err, urls.ErrIsaDirectory) {
+		} else if errors.Is(err, utils.ErrIsaDirectory) {
 			fmt.Printf("Looks like this is a directory: %q\n", urlFilePath)
 			os.Exit(1)
 		}
@@ -69,7 +72,45 @@ func ui() {
 		}
 	}
 
-	p := tea.NewProgram(tui.InitialModel(player, stations, volume), tea.WithAltScreen())
+	stat, err := os.Stat(trackFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			fmt.Printf("The track file %q does not exist.\n", trackFilePath)
+			prompt, err := utils.GetInteractiveBooleanPrompt("Do you want radioboat to create a trackfile at this location ?")
+			if err != nil {
+				panic(err)
+			}
+			var res string
+			for {
+				res, err = prompt.Run()
+				if err != nil {
+					fmt.Println("Please answer again.")
+				}
+				if res == "n" {
+					fmt.Println("Exiting now without creating the trackfile.")
+					return
+				} else {
+					break
+				}
+			}
+			file, err := os.Create(trackFilePath)
+			if err != nil {
+				panic(err)
+			}
+			err = file.Close()
+			if err != nil {
+				panic(err)
+			}
+		} else if os.IsPermission(err) {
+			fmt.Printf("Looks like you don't have the permission to access the track-file: %q\n", trackFilePath)
+			os.Exit(1)
+		}
+	} else if stat.IsDir() {
+		fmt.Printf("Looks like this is a directory: %q\n", trackFilePath)
+		os.Exit(1)
+	}
+
+	p := tea.NewProgram(tui.InitialModel(player, stations, volume, trackFilePath), tea.WithAltScreen())
 	if err := p.Start(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)

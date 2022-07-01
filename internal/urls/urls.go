@@ -1,11 +1,11 @@
 package urls
 
 import (
-	"errors"
 	"os"
 	"strings"
 
 	"github.com/gocarina/gocsv"
+	"github.com/slashformotion/radioboat/internal/utils"
 )
 
 type Station struct { // Our example struct, you can use "-" to ignore a field
@@ -15,8 +15,6 @@ type Station struct { // Our example struct, you can use "-" to ignore a field
 	NotUsed string `csv:"-"`
 }
 
-var ErrIsaDirectory = errors.New("the path to the file points to a directory")
-
 func ParseUrlFile(filename string) ([]*Station, error) {
 	stations := []*Station{}
 	// Check if filename is a directory
@@ -25,7 +23,7 @@ func ParseUrlFile(filename string) ([]*Station, error) {
 		return stations, err
 	}
 	if stat.IsDir() {
-		return stations, ErrIsaDirectory
+		return stations, utils.ErrIsaDirectory
 	}
 
 	clientsFile, err := os.OpenFile(filename, os.O_RDONLY, os.ModePerm)
