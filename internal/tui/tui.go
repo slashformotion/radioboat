@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -12,11 +13,28 @@ import (
 )
 
 type model struct {
-	stations []*urls.Station
-	cursor   int
-	player   players.RadioPlayer
-	help     help.Model
-	dj       Dj
+	stations      []*urls.Station
+	cursor        int
+	player        players.RadioPlayer
+	help          help.Model
+	dj            Dj
+	trackFilePath string
+}
+
+func (m model) SaveTrack(n string) {
+	trackFile, err := os.OpenFile(m.trackFilePath, os.O_APPEND|os.O_WRONLY, os.ModePerm)
+
+	if err != nil {
+		// panic(fmt.Errorf("can't open %q as a track file", m.trackFilePath))
+		panic(err)
+	}
+	defer trackFile.Close()
+	_, err = fmt.Fprintf(trackFile, "%s\n", n)
+	if err != nil {
+		// panic(fmt.Errorf("can't open %q as a track file", m.trackFilePath))
+		panic(err)
+	}
+
 }
 
 type Dj struct {
@@ -72,6 +90,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, DefaultKeyMap.VolumeDown):
 			m.player.DecVolume()
 			m.dj.volume = m.player.Volume()
+		case key.Matches(msg, DefaultKeyMap.SaveTrack):
+			m.SaveTrack(m.player.NowPlaying())
 		}
 	}
 
@@ -103,7 +123,7 @@ func (m model) View() string {
 
 	return docStyle.Render(s)
 }
-func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int) model {
+func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, trackFilePath string) model {
 	m := model{
 		player:   p,
 		stations: stations,
@@ -111,7 +131,8 @@ func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int) m
 			current: "Not Playing",
 			volume:  volume,
 		},
-		help: help.New(),
+		help:          help.New(),
+		trackFilePath: trackFilePath,
 	}
 	m.player.Init()
 	m.player.SetVolume(volume)

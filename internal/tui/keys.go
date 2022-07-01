@@ -10,6 +10,7 @@ type KeyMap struct {
 	Quit       key.Binding
 	VolumeUp   key.Binding
 	VolumeDown key.Binding
+	SaveTrack  key.Binding
 }
 
 var DefaultKeyMap = KeyMap{
@@ -41,12 +42,16 @@ var DefaultKeyMap = KeyMap{
 		key.WithKeys("ctrl+c", "esc", "q"),
 		key.WithHelp("Ctrl+C/Escape/q", "Quit"),
 	),
+	SaveTrack: key.NewBinding(
+		key.WithKeys("ctrl+s"),
+		key.WithHelp("Ctrl+s", "Save current track name to track file"),
+	),
 }
 
 // ShortHelp returns keybindings to be shown in the mini help view. It's part
 // of the key.Map interface.
 func (k KeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Quit, k.Up, k.Down, k.VolumeDown, k.VolumeUp, k.Play, k.ToggleMute}
+	return []key.Binding{k.Quit, k.Up, k.Down, k.VolumeDown, k.VolumeUp, k.Play, k.ToggleMute, k.SaveTrack}
 }
 
 // FullHelp returns keybindings for the expanded help view. It's part of the
