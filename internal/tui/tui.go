@@ -78,7 +78,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 func (m model) View() string {
-	s := header_s.Render(m.dj.ToString())
+	s := header_s.Render(m.dj.ToString() + " + " + m.player.NowPlaying())
 	s += "\n\n"
 
 	// Iterate over our choices
