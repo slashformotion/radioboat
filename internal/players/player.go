@@ -31,4 +31,5 @@ type RadioPlayer interface {
 	// Return the volume in percentage
 	Volume() int
 	Close()
+	NowPlaying() string
 }
