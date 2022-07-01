@@ -26,10 +26,7 @@ AUR link: https://aur.archlinux.org/packages/radioboat
 You need a functional [go setup](https://go.dev/doc/install).
 
 ```
-git clone https://github.com/slashformotion/radioboat
-cd radioboat
-go build
-go install
+go install github.com/slashformotion/radioboat@latest
 ```
 ## How to Use ? 
 
