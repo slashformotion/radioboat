@@ -101,3 +101,8 @@ func (m *MpvPlayer) Volume() int {
 func (m *MpvPlayer) Close() {
 
 }
+
+func (m *MpvPlayer) NowPlaying() string {
+	str, _ := m.client.GetProperty("media-title")
+	return str
+}
