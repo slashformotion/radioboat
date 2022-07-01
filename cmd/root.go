@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -47,7 +48,16 @@ func Execute() {
 func ui() {
 	stations, err := urls.ParseUrlFile(urlFilePath)
 	if err != nil {
-		panic(err)
+		if os.IsNotExist(err) {
+			fmt.Printf("Looks like there is nothing here: %q\n", urlFilePath)
+			os.Exit(1)
+		} else if os.IsPermission(err) {
+			fmt.Printf("Looks like you don't have the permission to access the url file: %q\n", urlFilePath)
+			os.Exit(1)
+		} else if errors.Is(err, urls.ErrIsaDirectory) {
+			fmt.Printf("Looks like this is a directory: %q\n", urlFilePath)
+			os.Exit(1)
+		}
 	}
 
 	var player players.RadioPlayer
