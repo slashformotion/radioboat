@@ -1,14 +1,16 @@
 package players
 
 import (
-	"fmt"
+	"errors"
 )
+
+var ErrPlayerIsNotSupported = errors.New("this player is not supported yet, please head to https://github.com/slashformotion/radioboat to see what players are implemented")
 
 func Get_player(name string) (RadioPlayer, error) {
 	if name == "mpv" {
 		return &MpvPlayer{}, nil
 	}
-	return nil, fmt.Errorf("%q provider does not exists", name)
+	return nil, ErrPlayerIsNotSupported
 }
 
 type RadioPlayer interface {

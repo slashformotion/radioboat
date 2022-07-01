@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -53,7 +54,10 @@ func ui() {
 	var player players.RadioPlayer
 	player, err = players.Get_player(playerName)
 	if err != nil {
-		panic(err)
+		if errors.Is(err, players.ErrPlayerIsNotSupported) {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
 	}
 
 	p := tea.NewProgram(tui.InitialModel(player, stations, volume), tea.WithAltScreen())
