@@ -18,6 +18,11 @@
 
 ## Installation
 
+### Arch linux based distro
+
+AUR link: https://aur.archlinux.org/packages/radioboat
+
+### Other cases
 You need a functional [go setup](https://go.dev/doc/install).
 
 ```
@@ -28,7 +33,7 @@ go install
 ```
 ## How to Use ? 
 
-> please head to the [wiki](https://github.com/slashformotion/radioboat/wiki) for more information  
+> please head to the [wiki](https://github.com/slashformotion/radioboat/wiki) for more informations 
 
 - Copy the sample [stations.csv](https://github.com/slashformotion/radioboat/blob/master/stations.csv) to ~/.config/radioboat/urls.csv.
 - Add the audio stream of your choice and give them a name
@@ -36,7 +41,7 @@ go install
 ```bash
 radioboat
 ```
-Then, follow the intruction at the bottom of the screen.
+Then, follow the intructions at the bottom of the screen.
 
 ## Dependencies
 
