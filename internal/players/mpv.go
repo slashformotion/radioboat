@@ -29,7 +29,7 @@ func (m *MpvPlayer) Init() error {
 	}
 
 	// Waiting to be sure that mpv ipc server is ready
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 	m.ipcc = mpv.NewIPCClient(fmt.Sprintf("/tmp/%s", m.socketname)) // Lowlevel client
 	m.client = mpv.NewClient(m.ipcc)
 	return nil
