@@ -3,19 +3,22 @@ package tui
 import "github.com/charmbracelet/lipgloss"
 
 var (
-	color_header = lipgloss.AdaptiveColor{Light: "236", Dark: "248"}
+	header_center_s = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("233")).
+			Background(lipgloss.Color("147")).
+			Align(lipgloss.Center)
 
-	header_s = lipgloss.NewStyle().
-		// PaddingTop(1).
-		// PaddingRight(1).
-		// PaddingBottom(1).
-		// PaddingLeft(1).
-		Foreground(lipgloss.Color("233")).
-		Background(lipgloss.Color("147")).
-		Blink(true).
-		// BorderTop(true).
-		// BorderStyle(lipgloss.NormalBorder()).
-		Align(lipgloss.Center)
+	header_status_s = lipgloss.NewStyle().Inherit(header_center_s).
+			Foreground(lipgloss.Color("233")).
+			Background(lipgloss.Color("#FF5F87")).
+			PaddingLeft(1).
+			PaddingRight(1)
+
+	header_volume_s = lipgloss.NewStyle().Inherit(header_center_s).
+			Foreground(lipgloss.Color("233")).
+			Background(lipgloss.Color("#A550DF")).
+			PaddingLeft(1).
+			PaddingRight(1)
 
 	list_selected_s = lipgloss.NewStyle().Bold(true)
 
