@@ -2,14 +2,17 @@ package tui
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/slashformotion/radioboat/internal/players"
 	"github.com/slashformotion/radioboat/internal/urls"
 )
+
+var width int
+var height int
 
 type model struct {
 	stations []*urls.Station
@@ -20,32 +23,41 @@ type model struct {
 }
 
 type Dj struct {
-	current string
-	muted   bool
-	volume  int
+	currentStation string
+	muted          bool
+	volume         int
 }
 
-func (dj Dj) ToString() string {
-	if dj.muted {
-		return fmt.Sprintf(" %s - Muted(%d)", strings.Title(dj.current), dj.volume)
+func HeaderToString(currentStation string, trackName string, volume int, muted bool) string {
+	var mutedStr string
+	if muted {
+		mutedStr = fmt.Sprintf("Muted(%d)", volume)
 	} else {
-		return fmt.Sprintf(" %s - Volume %d", strings.Title(dj.current), dj.volume)
+		mutedStr = fmt.Sprintf("Volume %d", volume)
 	}
+	statusStr := header_status_s.Render(currentStation)
+	volumeStr := header_volume_s.Render(mutedStr)
+	centerStr := header_center_s.Copy().
+		Width(width - lipgloss.Width(statusStr) - lipgloss.Width(volumeStr) - 3). // -3 because of the doc margin
+		Render(trackName)
+	s := lipgloss.JoinHorizontal(lipgloss.Top, statusStr, centerStr, volumeStr)
+	s += "\n\n"
+	return s
 }
 
 func (m model) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
 	return nil
 }
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
+		width = msg.Width
+		height = msg.Height
 		m.help.Width = msg.Width
-		//lets change the width of evry thing we need
-		header_s = header_s.Width(msg.Width)
 
 	case tea.KeyMsg:
-
 		switch {
 		case key.Matches(msg, DefaultKeyMap.Quit):
 			return m, tea.Quit
@@ -64,7 +76,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.dj.muted = m.player.IsMute()
 		case key.Matches(msg, DefaultKeyMap.Play):
 			m.player.Play(m.stations[m.cursor].Url)
-			m.dj.current = m.stations[m.cursor].Name
+			m.dj.currentStation = m.stations[m.cursor].Name
 
 		case key.Matches(msg, DefaultKeyMap.VolumeUp):
 			m.player.IncVolume()
@@ -77,25 +89,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	return m, nil
 }
-func (m model) View() string {
-	s := header_s.Render(m.dj.ToString() + " + " + m.player.NowPlaying())
-	s += "\n\n"
 
+func (m model) View() string {
+	s := HeaderToString(m.dj.currentStation, m.player.NowPlaying(), m.dj.volume, m.dj.muted)
 	// Iterate over our choices
 	for i, station := range m.stations {
 
-		// Is the cursor pointing at this choice?
 		cursor := " " // no cursor
 		name := station.Name
 		if m.cursor == i {
 			cursor = ">" // cursor!
 			name = list_selected_s.Render(station.Name)
 		}
-		if m.dj.current == station.Name {
+		if m.dj.currentStation == station.Name {
 			name = list_selected_s.Copy().Italic(true).Bold(false).Render(station.Name)
 		}
 
-		// Render the row
 		s += fmt.Sprintf("%s %s\n", cursor, name)
 	}
 	helpView := m.help.View(DefaultKeyMap)
@@ -108,8 +117,8 @@ func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int) m
 		player:   p,
 		stations: stations,
 		dj: Dj{
-			current: "Not Playing",
-			volume:  volume,
+			currentStation: "Not Playing",
+			volume:         volume,
 		},
 		help: help.New(),
 	}
