@@ -16,6 +16,10 @@
 
 ![](https://raw.githubusercontent.com/slashformotion/radioboat/master/.github/assets/screencast.gif)
 
+## **Features**
+- Save the current track name to a text file.
+- Play radios.
+
 ## Installation
 
 ### Arch linux based distro
