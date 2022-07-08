@@ -14,7 +14,6 @@ builds:
     # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
     ldflags:
       - -s -w -X github.com/slashformotion/radioboat/internal/buildinfo.Version={{.Version}} -X github.com/slashformotion/radioboat/internal/buildinfo.Commit={{.Commit}} -X github.com/slashformotion/radioboat/internal/buildinfo.BuildDate={{.Date}} -X github.com/slashformotion/radioboat/internal/buildinfo.VendorInfo=goreleaser 
-      - ./usemsan=-msan
 archives:
   - replacements:
       darwin: Darwin
