@@ -30,10 +30,9 @@ var playerName string
 var trackFilePath string
 
 var rootCmd = &cobra.Command{
-	Use:     "radioboat",
-	Short:   "Radioboat is a terminal web radio client",
-	Long:    `Radioboat is a terminal web radio client, built with simplicity in mind`,
-	Version: "v0.0.1",
+	Use:   "radioboat",
+	Short: "Radioboat is a terminal web radio client",
+	Long:  `Radioboat is a terminal web radio client, built with simplicity in mind`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ui()
 	},
