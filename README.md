@@ -26,6 +26,9 @@
 
 AUR link: https://aur.archlinux.org/packages/radioboat
 
+### NixOs
+
+NixOs package: [here](https://search.nixos.org/packages?channel=unstable&show=radioboat&from=0&size=50&sort=relevance&type=packages&query=radioboat)
 ### Other cases
 You need a functional [go setup](https://go.dev/doc/install).
 
