@@ -34,7 +34,7 @@ type model struct {
 	help          help.Model
 	dj            Dj
 	trackFilePath string
-	err           error
+	mb            *MessageBox
 }
 
 type Dj struct {
@@ -62,16 +62,24 @@ func HeaderToString(currentStation string, trackName string, volume int, muted b
 }
 
 func (m model) Init() tea.Cmd {
-	// Just return `nil`, which means "no I/O right now, please."
-	return CmdTickerTrackname
+	return tea.Batch(CmdTickerMessageBox, CmdTickerTrackname)
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
+func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
+
+	switch msg := tmsg.(type) {
+	case TickMessageBox:
+		return m, m.mb.Update(tmsg)
 	case SaveTrackMsg:
 		if msg.err != nil {
-			m.err = msg.err
+			m.mb.append(
+				NewMessageFromErr(msg.err),
+			)
 			return m, nil
+		} else {
+			m.mb.append(
+				NewMessage(fmt.Sprintf("Just saved track name %q to %q", msg.trackName, m.trackFilePath)),
+			)
 		}
 	case Tick:
 		m.dj.currentTrack = m.player.NowPlaying()
@@ -125,9 +133,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	s := HeaderToString(m.dj.currentStation, m.dj.currentTrack, m.dj.volume, m.dj.muted)
-	if m.err != nil {
-		s += lipgloss.NewStyle().Foreground(lipgloss.Color("#FF5F87")).Render("An Error happened: "+m.err.Error()) + "\n\n"
-	}
+
 	// Iterate over our choices
 	for i, station := range m.stations {
 
@@ -143,6 +149,7 @@ func (m model) View() string {
 
 		s += fmt.Sprintf("%s %s\n", cursor, name)
 	}
+	s += m.mb.View()
 	helpView := m.help.View(DefaultKeyMap)
 	s += "\n\n" + helpView
 
@@ -158,6 +165,7 @@ func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, t
 		},
 		help:          help.New(),
 		trackFilePath: trackFilePath,
+		mb:            new(MessageBox),
 	}
 	m.player.Init()
 	m.player.SetVolume(volume)
@@ -188,17 +196,19 @@ func CmdSaveTrack(trackFilePath, track string) tea.Cmd {
 			msg.err = err
 			return msg
 		}
-		defer trackFile.Close()
 		_, err = fmt.Fprintf(trackFile, "%s\n", track)
 		if err != nil {
 			msg.err = err
 			return msg
 		}
+		msg.err = trackFile.Close()
+		msg.trackName = track
 		return msg
 	}
 }
 
 // tea.Msg send by CmdSaveTrack
 type SaveTrackMsg struct {
-	err error
+	err       error
+	trackName string
 }
