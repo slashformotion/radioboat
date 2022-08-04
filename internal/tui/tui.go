@@ -27,6 +27,7 @@ var width int
 var height int
 
 type model struct {
+	savedTracks   []string
 	stations      []*urls.Station
 	cursor        int
 	player        players.RadioPlayer
@@ -108,7 +109,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.player.DecVolume()
 			m.dj.volume = m.player.Volume()
 		case key.Matches(msg, DefaultKeyMap.SaveTrack):
-			return m, CmdSaveTrack(m.trackFilePath, m.player.NowPlaying())
+			trackName := m.player.NowPlaying()
+			for _, s := range m.savedTracks {
+				if trackName == s {
+					return m, nil
+				}
+			}
+			m.savedTracks = append(m.savedTracks, trackName)
+			return m, CmdSaveTrack(m.trackFilePath, trackName)
 		}
 	}
 
