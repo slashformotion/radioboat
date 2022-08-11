@@ -39,6 +39,7 @@ To do that please head to the wiki: https://github.com/slashformotion/radioboat/
 		cm.Stdin = os.Stdin
 		cm.Stdout = os.Stdout
 		cm.Stderr = os.Stderr
+
 		cm.Start()
 		cm.Wait()
 	},
