@@ -17,7 +17,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/blang/mpv"
+	mpv "github.com/slashformotion/gompv"
 	"github.com/slashformotion/radioboat/internal/utils"
 )
 
