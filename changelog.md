@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added a retry mechanism for the mpv socket connection using an exponential backoff. That way we are sure that mpv is ready to accept connections when creating the ipcclient.
+- Added a linter in CI. 
+
+### Changed
+
+- Now exit if the editor can't start properly on edit command.
+- Changed CI to run in parallel.
 
 ## [v0.2.2] - 04/08/2022
 
