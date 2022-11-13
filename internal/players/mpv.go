@@ -154,8 +154,10 @@ func (m *MpvPlayer) NowPlaying() string {
 	if str == "<nil>" {
 		return ""
 	}
-	str = str[1 : len(str)-2]
-	if strings.Contains(m.url, str) {
+	str = str[1 : len(str)-1]
+	if strings.Contains(m.url, str) ||
+		strings.Contains(strings.ReplaceAll(m.url, "http://", ""), str) ||
+		strings.Contains(strings.ReplaceAll(m.url, "https://", ""), str) {
 		return ""
 	}
 	return str
