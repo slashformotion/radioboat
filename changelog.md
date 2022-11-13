@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a retry mechanism for the mpv socket connection using an exponential backoff. That way we are sure that mpv is ready to accept connections when creating the ipcclient.
 - Added a linter in CI.
 - Now the station list is responsive. The user can use the arrows or hjkl to navigate.
+- Add keybinding to show more keybindings.
 
 ### Changed
 
