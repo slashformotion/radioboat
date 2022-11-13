@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Now exit if the editor can't start properly on edit command.
 - Changed CI to run in parallel.
 
+### Fixed
+
+- Fix a bug where the last char of the track title was missing.
+
 ## [v0.2.2] - 04/08/2022
 
 ## Added
