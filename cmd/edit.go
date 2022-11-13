@@ -11,6 +11,7 @@ package cmd
 // limitations under the License.
 
 import (
+	"log"
 	"os"
 	"os/exec"
 
@@ -40,8 +41,15 @@ To do that please head to the wiki: https://github.com/slashformotion/radioboat/
 		cm.Stdout = os.Stdout
 		cm.Stderr = os.Stderr
 
-		cm.Start()
-		cm.Wait()
+		err := cm.Start()
+		if err != nil {
+			log.Fatalf("Failed to start editor %q", editor)
+		}
+
+		err = cm.Wait()
+		if err != nil {
+			log.Fatalf("An error happened while running editor %q, (error=%s)", editor, err.Error())
+		}
 	},
 }
 
