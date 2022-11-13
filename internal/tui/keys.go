@@ -15,6 +15,8 @@ import "github.com/charmbracelet/bubbles/key"
 type KeyMap struct {
 	Up         key.Binding
 	Down       key.Binding
+	Right      key.Binding
+	Left       key.Binding
 	ToggleMute key.Binding
 	Play       key.Binding
 	Quit       key.Binding
@@ -31,6 +33,14 @@ var DefaultKeyMap = KeyMap{
 	Down: key.NewBinding(
 		key.WithKeys("j", "down"),
 		key.WithHelp("↓/j", "move down"),
+	),
+	Right: key.NewBinding(
+		key.WithKeys("l", "right"),
+		key.WithHelp("→/l", "move right"),
+	),
+	Left: key.NewBinding(
+		key.WithKeys("h", "left"),
+		key.WithHelp("←/j", "move left"),
 	),
 	ToggleMute: key.NewBinding(
 		key.WithKeys("m"),
