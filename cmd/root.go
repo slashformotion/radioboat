@@ -13,6 +13,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -117,6 +118,10 @@ func ui() {
 	} else if stat.IsDir() {
 		fmt.Printf("Looks like this is a directory: %q\n", trackFilePath)
 		os.Exit(1)
+	}
+	err = player.Init()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	p := tea.NewProgram(tui.InitialModel(player, stations, volume, trackFilePath), tea.WithAltScreen())
