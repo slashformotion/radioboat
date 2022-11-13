@@ -1,0 +1,83 @@
+name: Build 
+
+on:
+  push:
+    branches: 
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    branches: [ '**' ]
+
+jobs:
+  branch-naming-rules:
+    name: Check branch name
+    runs-on: ubuntu-latest
+    steps:
+      - uses: deepakputhraya/action-branch-name@master
+        with:
+          regex: '^(feature|bugfix|improvement|library|prerelease|release|hotfix|poc)\/[a-z0-9_.-]+$'
+          allowed_prefixes: 'feature,bugfix,improvement,library,prerelease,release,hotfix,poc'
+          ignore: main,dev
+          min_length: 5
+          max_length: 50
+
+  check-style:
+    name: Code style
+    needs: [branch-naming-rules]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.19'
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          skip-cache: true
+          skip-pkg-cache: true
+          skip-build-cache: true
+  unit-tests:
+    name: Unit tests
+    needs: [branch-naming-rules]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.19'
+      - name: Run units tests
+        run: go test -json ./... > test.json
+      - name: Annotate tests
+        if: always()
+        uses: guyarb/golang-test-annotations@v0.5.1
+        with:
+          test-results: test.json
+
+  build:
+    name: Build Radioboat
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    strategy:
+      matrix:
+        go_version: ['1.18.x', '1.19.x']
+    steps:
+      - uses: actions/checkout@v2
+        with:
+            fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go_version }}
+      - name: Build
+        run: go build -v .
+      - name: Upload binary 
+        uses: actions/upload-artifact@v1
+        with:
+          name: binary_${{ matrix.go_version }}
+          path: ./radioboat
