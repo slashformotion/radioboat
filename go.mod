@@ -3,6 +3,7 @@ module github.com/slashformotion/radioboat
 go 1.18
 
 require (
+	github.com/buger/goterm v1.0.4
 	github.com/charmbracelet/bubbles v0.14.0
 	github.com/charmbracelet/bubbletea v0.23.0
 	github.com/charmbracelet/lipgloss v0.6.0

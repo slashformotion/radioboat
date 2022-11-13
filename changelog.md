@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added a retry mechanism for the mpv socket connection using an exponential backoff. That way we are sure that mpv is ready to accept connections when creating the ipcclient.
-- Added a linter in CI. 
+- Added a linter in CI.
+- Now the station list is responsive. The user can use the arrows or hjkl to navigate.
 
 ### Changed
 
@@ -82,8 +83,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - 73adcfa mpv startup time is variable so Radioboat now wait 400ms to be sure that mpv is ready do respond on the pipe. This is a momentary fix.
-- 7255852 The track name is now in the header, if the track name is provided by the stream producer. 
-- bd1fca7 Prepare the player mechanism in case someone want to add support for  another player. 
+- 7255852 The track name is now in the header, if the track name is provided by the stream producer.
+- bd1fca7 Prepare the player mechanism in case someone want to add support for  another player.
 
 ### changed
 

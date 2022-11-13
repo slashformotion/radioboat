@@ -15,6 +15,7 @@ import (
 	"os"
 	"time"
 
+	tm "github.com/buger/goterm"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -23,7 +24,11 @@ import (
 	"github.com/slashformotion/radioboat/internal/urls"
 )
 
-var width int
+var (
+	width        int
+	height       int
+	centerHeight int
+)
 
 type model struct {
 	savedTracks   []string
@@ -85,6 +90,7 @@ func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, CmdTickerTrackname
 	case tea.WindowSizeMsg:
 		width = msg.Width
+		height = msg.Height
 		m.help.Width = msg.Width
 
 	case tea.KeyMsg:
@@ -98,6 +104,16 @@ func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case key.Matches(msg, DefaultKeyMap.Down):
 			m.cursor++
+			if m.cursor >= len(m.stations) {
+				m.cursor = len(m.stations) - 1
+			}
+		case key.Matches(msg, DefaultKeyMap.Left):
+			m.cursor -= centerHeight
+			if m.cursor < 0 {
+				m.cursor = 0
+			}
+		case key.Matches(msg, DefaultKeyMap.Right):
+			m.cursor += centerHeight
 			if m.cursor >= len(m.stations) {
 				m.cursor = len(m.stations) - 1
 			}
@@ -130,29 +146,36 @@ func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := HeaderToString(m.dj.currentStation, m.dj.currentTrack, m.dj.volume, m.dj.muted)
-
+	header := HeaderToString(m.dj.currentStation, m.dj.currentTrack, m.dj.volume, m.dj.muted)
+	messagebox := m.mb.View()
+	helpView := m.help.View(DefaultKeyMap)
+	centerHeight = height - lipgloss.Height(header) - lipgloss.Height(messagebox) - lipgloss.Height(helpView) - 3
+	// centerHeight = 22
+	s := header
 	// Iterate over our choices
+	nbColumns := len(m.stations)/centerHeight + 1
+	columns := make([]string, nbColumns)
 	for i, station := range m.stations {
 
-		cursor := " " // no cursor
+		cursor := "   " // no cursor
 		name := station.Name
 		if m.cursor == i {
-			cursor = ">" // cursor!
+			cursor = " ➤ " // cursor!
 			name = list_selected_s.Render(station.Name)
 		}
-		if m.dj.currentStation == station.Name {
+		if m.stations[i].Name == m.dj.currentStation {
 			name = list_selected_s.Copy().Italic(true).Bold(false).Render(station.Name)
 		}
+		var columnNumber uint = uint(i / centerHeight)
+		line := cursor + name
+		columns[columnNumber] += line + "\n"
 
-		s += fmt.Sprintf("%s %s\n", cursor, name)
 	}
-	s += m.mb.View()
-	helpView := m.help.View(DefaultKeyMap)
-	s += "\n\n" + helpView
-
+	s += lipgloss.JoinHorizontal(lipgloss.Left, columns...)
+	s += "\n" + messagebox + "\n" + helpView
 	return docStyle.Render(s)
 }
+
 func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, trackFilePath string) model {
 	m := model{
 		player:   p,
@@ -168,8 +191,8 @@ func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, t
 	m.player.SetVolume(volume)
 	m.dj.volume = m.player.Volume()
 	m.dj.muted = m.player.IsMute()
-
-	// m.help.ShowAll = true
+	height = tm.Height()
+	width = tm.Width()
 	return m
 }
 
