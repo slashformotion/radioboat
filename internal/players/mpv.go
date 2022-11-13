@@ -12,37 +12,65 @@ package players
 
 import (
 	"fmt"
+	"net"
 	"os/exec"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/jpillora/backoff"
 	mpv "github.com/slashformotion/gompv"
 	"github.com/slashformotion/radioboat/internal/utils"
 )
 
 type MpvPlayer struct {
-	socketname string
-	ipcc       *mpv.IPCClient
-	client     *mpv.Client
-	url        string
+	ipcc   *mpv.IPCClient
+	client *mpv.Client
+	url    string
 }
 
 func (m *MpvPlayer) Init() error {
-	m.socketname = utils.RandomString(12)
-	cmd := exec.Command("mpv", "--idle",
-		fmt.Sprintf("--input-ipc-server=/tmp/%s", m.socketname))
+	socketpath := "/tmp/radioboat-" + utils.RandomString(25)
+	cmd := exec.Command("mpv", "--idle", "--no-video",
+		fmt.Sprintf("--input-ipc-server=%s", socketpath))
+	// Bind the child process to radioboat process. When radioboat exit, mpv will receive a SIGTERM
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Pdeathsig: syscall.SIGTERM,
 	}
+
+	retry := backoff.Backoff{
+		Factor: 3,
+		Jitter: false,
+		Min:    10 * time.Millisecond,
+		Max:    2 * time.Second,
+	}
+	// starting mpv
 	err := cmd.Start()
 	if err != nil {
 		return err
 	}
+	// Exponential backoff
+	var numberOfTimeConnectionTried uint
+	for {
+		numberOfTimeConnectionTried += 1
+		conn, err := net.Dial("unix", socketpath)
+		if err != nil {
+			currentSpleepTime := retry.Duration()
+			if currentSpleepTime == retry.Max {
+				return fmt.Errorf(
+					"failed to connect to mpv (socketpath=%s, tried to connect %d time)",
+					socketpath,
+					numberOfTimeConnectionTried)
+			}
+			time.Sleep(currentSpleepTime)
+			continue
+		}
+		conn.Close()
+		break
+	}
 
 	// Waiting to be sure that mpv ipc server is ready
-	time.Sleep(400 * time.Millisecond)
-	m.ipcc = mpv.NewIPCClient(fmt.Sprintf("/tmp/%s", m.socketname)) // Lowlevel client
+	m.ipcc = mpv.NewIPCClient(socketpath) // Lowlevel client
 	m.client = mpv.NewClient(m.ipcc)
 	return nil
 }
