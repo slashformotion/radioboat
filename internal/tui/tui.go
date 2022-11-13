@@ -95,17 +95,19 @@ func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch {
+		case key.Matches(msg, DefaultKeyMap.Help):
+			m.help.ShowAll = !m.help.ShowAll
 		case key.Matches(msg, DefaultKeyMap.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, DefaultKeyMap.Up):
 			m.cursor--
 			if m.cursor < 0 {
-				m.cursor = 0
+				m.cursor = len(m.stations) - 1
 			}
 		case key.Matches(msg, DefaultKeyMap.Down):
 			m.cursor++
 			if m.cursor >= len(m.stations) {
-				m.cursor = len(m.stations) - 1
+				m.cursor = 0
 			}
 		case key.Matches(msg, DefaultKeyMap.Left):
 			m.cursor -= centerHeight

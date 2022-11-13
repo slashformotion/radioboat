@@ -23,6 +23,7 @@ type KeyMap struct {
 	VolumeUp   key.Binding
 	VolumeDown key.Binding
 	SaveTrack  key.Binding
+	Help       key.Binding
 }
 
 var DefaultKeyMap = KeyMap{
@@ -66,19 +67,26 @@ var DefaultKeyMap = KeyMap{
 		key.WithKeys("ctrl+s"),
 		key.WithHelp("Ctrl+s", "Save current track name to track file"),
 	),
+	Help: key.NewBinding(
+		key.WithKeys("h"),
+		key.WithHelp("h", "Show All keybindings"),
+	),
 }
 
 // ShortHelp returns keybindings to be shown in the mini help view. It's part
 // of the key.Map interface.
 func (k KeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Quit, k.Up, k.Down, k.VolumeDown, k.VolumeUp, k.Play, k.ToggleMute, k.SaveTrack}
+	return []key.Binding{k.Help, k.VolumeDown, k.VolumeUp, k.Play}
 }
 
 // FullHelp returns keybindings for the expanded help view. It's part of the
 // key.Map interface.
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.VolumeDown, k.VolumeUp, k.Play, k.ToggleMute}, // first column
-		{k.Quit}, // second column
+		{k.Help, k.Play},
+		{k.Up, k.Down},
+		{k.Left, k.Right},
+		{k.VolumeDown, k.VolumeUp},
+		{k.ToggleMute, k.Quit},
 	}
 }
