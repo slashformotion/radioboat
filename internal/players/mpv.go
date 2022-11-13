@@ -75,7 +75,10 @@ func (m *MpvPlayer) Init() error {
 	return nil
 }
 func (m *MpvPlayer) Play(stream_url string) {
-	m.client.Loadfile(stream_url, mpv.LoadFileModeReplace)
+	err := m.client.Loadfile(stream_url, mpv.LoadFileModeReplace)
+	if err != nil {
+		panic(err)
+	}
 	m.url = stream_url
 }
 func (m *MpvPlayer) Mute() {
@@ -127,7 +130,10 @@ func (m *MpvPlayer) DecVolume() {
 
 // Set volume
 func (m *MpvPlayer) SetVolume(volume int) {
-	m.client.SetProperty("volume", volume)
+	err := m.client.SetProperty("volume", volume)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Return the volume in percentage

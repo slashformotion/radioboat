@@ -24,7 +24,6 @@ import (
 )
 
 var width int
-var height int
 
 type model struct {
 	savedTracks   []string
@@ -86,7 +85,6 @@ func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, CmdTickerTrackname
 	case tea.WindowSizeMsg:
 		width = msg.Width
-		height = msg.Height
 		m.help.Width = msg.Width
 
 	case tea.KeyMsg:
@@ -167,7 +165,6 @@ func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, t
 		trackFilePath: trackFilePath,
 		mb:            new(MessageBox),
 	}
-	m.player.Init()
 	m.player.SetVolume(volume)
 	m.dj.volume = m.player.Volume()
 	m.dj.muted = m.player.IsMute()
