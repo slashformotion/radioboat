@@ -73,6 +73,10 @@ func ui() {
 		}
 	}
 
+	if len(stations) == 0 {
+		log.Fatalf("mmmh... Looks like your url file %q is empty", urlFilePath)
+	}
+
 	var player players.RadioPlayer
 	player, err = players.Get_player(playerName)
 	if err != nil {
