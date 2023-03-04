@@ -14,34 +14,51 @@ import (
 	"errors"
 )
 
+// ErrPlayerIsNotSupported is returned when player setting is not valid (eg there is no client implementation for that player)
 var ErrPlayerIsNotSupported = errors.New("this player is not supported yet, please head to https://github.com/slashformotion/radioboat to see what players are implemented")
 
-func Get_player(name string) (RadioPlayer, error) {
-	if name == "mpv" {
+// GetPlayer return a RadioPlayer matching the given player name
+func GetPlayer(playerName string) (RadioPlayer, error) {
+	if playerName == "mpv" {
 		return &MpvPlayer{}, nil
 	}
 	return nil, ErrPlayerIsNotSupported
 }
 
+// RadioPayer represent player capable of reading audio streams
 type RadioPlayer interface {
+	// Init step of the player
+	//
+	// If an error is returned, radioboat will quit.
 	Init() error
+
+	// Play replace the current stream with the new stream URL
 	Play(stream_url string)
 
+	// IsMute return mute state
 	IsMute() bool
+	// Mute set the mute state to true
 	Mute()
+	// Unmute set the mute state to false
 	Unmute()
+	// ToggleMute toggle mute state
 	ToggleMute()
-	// Increase volume by 5%
+
+	// IncVolume volume by 5%
 	IncVolume()
 
-	// Decrease volume by 5%
+	// Decrease decrease the volume by 5%
 	DecVolume()
 
-	// Set volume
+	// SetVolume set the volume to the desired level
 	SetVolume(volume int)
 
-	// Return the volume in percentage
+	// Volume return the volume in percentage
 	Volume() int
+
+	// Close the connection to the player
 	Close()
+
+	// NowPlaying return a the name of the track playing
 	NowPlaying() string
 }

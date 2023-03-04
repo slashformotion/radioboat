@@ -9,8 +9,11 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Message livespan
+const BASE_DELAY = 5 * time.Second
+
 var (
-	BASE_DELAY    = 5 * time.Second
+	// Stylesheet
 	message_box_s = lipgloss.NewStyle().
 			PaddingLeft(1).
 			PaddingRight(1).
@@ -41,6 +44,7 @@ func NewMessageFromErr(err error) *Message {
 	}
 }
 
+// append a message to the message box
 func (mb *MessageBox) append(msg *Message) {
 	mb.content = append(mb.content, msg)
 }
@@ -77,6 +81,7 @@ func (mb *MessageBox) View() string {
 
 }
 
+// Remove old message
 func (mb *MessageBox) clean() {
 	now := time.Now()
 	var newMessageList []*Message
@@ -88,6 +93,7 @@ func (mb *MessageBox) clean() {
 	mb.content = newMessageList
 }
 
+// Update the Message box
 func (mb *MessageBox) Update(tmsg tea.Msg) tea.Cmd {
 	switch tmsg.(type) {
 	case TickMessageBox:

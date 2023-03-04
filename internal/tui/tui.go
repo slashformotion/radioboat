@@ -25,27 +25,29 @@ import (
 )
 
 var (
-	width        int
-	height       int
+	// width of the terminal
+	width int
+	// height of the terminal
+	height int
+
+	// height of the main widget
 	centerHeight int
 )
 
 type model struct {
-	savedTracks   []string
-	stations      []*urls.Station
-	cursor        int
-	player        players.RadioPlayer
-	help          help.Model
-	dj            Dj
-	trackFilePath string
-	mb            *MessageBox
-}
+	savedTracks []string
+	stations    []*urls.Station
+	cursor      int
+	player      players.RadioPlayer
+	help        help.Model
 
-type Dj struct {
 	currentStation string
 	muted          bool
 	volume         int
 	currentTrack   string
+
+	trackFilePath string
+	mb            *MessageBox
 }
 
 func HeaderToString(currentStation string, trackName string, volume int, muted bool) string {
@@ -86,7 +88,7 @@ func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 		}
 	case Tick:
-		m.dj.currentTrack = m.player.NowPlaying()
+		m.currentTrack = m.player.NowPlaying()
 		return m, CmdTickerTrackname
 	case tea.WindowSizeMsg:
 		width = msg.Width
@@ -121,17 +123,17 @@ func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case key.Matches(msg, DefaultKeyMap.ToggleMute):
 			m.player.ToggleMute()
-			m.dj.muted = m.player.IsMute()
+			m.muted = m.player.IsMute()
 		case key.Matches(msg, DefaultKeyMap.Play):
 			m.player.Play(m.stations[m.cursor].Url)
-			m.dj.currentStation = m.stations[m.cursor].Name
+			m.currentStation = m.stations[m.cursor].Name
 
 		case key.Matches(msg, DefaultKeyMap.VolumeUp):
 			m.player.IncVolume()
-			m.dj.volume = m.player.Volume()
+			m.volume = m.player.Volume()
 		case key.Matches(msg, DefaultKeyMap.VolumeDown):
 			m.player.DecVolume()
-			m.dj.volume = m.player.Volume()
+			m.volume = m.player.Volume()
 		case key.Matches(msg, DefaultKeyMap.SaveTrack):
 			trackName := m.player.NowPlaying()
 			for _, s := range m.savedTracks {
@@ -148,7 +150,7 @@ func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	header := HeaderToString(m.dj.currentStation, m.dj.currentTrack, m.dj.volume, m.dj.muted)
+	header := HeaderToString(m.currentStation, m.currentTrack, m.volume, m.muted)
 	messagebox := m.mb.View()
 	helpView := m.help.View(DefaultKeyMap)
 	centerHeight = height - lipgloss.Height(header) - lipgloss.Height(messagebox) - lipgloss.Height(helpView) - 3
@@ -165,7 +167,7 @@ func (m model) View() string {
 			cursor = " ➤ " // cursor!
 			name = list_selected_s.Render(station.Name)
 		}
-		if m.stations[i].Name == m.dj.currentStation {
+		if m.stations[i].Name == m.currentStation {
 			name = list_selected_s.Copy().Italic(true).Bold(false).Render(station.Name)
 		}
 		var columnNumber uint = uint(i / centerHeight)
@@ -180,19 +182,17 @@ func (m model) View() string {
 
 func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, trackFilePath string) model {
 	m := model{
-		player:   p,
-		stations: stations,
-		dj: Dj{
-			currentStation: "Not Playing",
-			volume:         volume,
-		},
-		help:          help.New(),
-		trackFilePath: trackFilePath,
-		mb:            new(MessageBox),
+		player:         p,
+		stations:       stations,
+		currentStation: "Not Playing",
+		volume:         volume,
+		help:           help.New(),
+		trackFilePath:  trackFilePath,
+		mb:             new(MessageBox),
 	}
 	m.player.SetVolume(volume)
-	m.dj.volume = m.player.Volume()
-	m.dj.muted = m.player.IsMute()
+	m.volume = m.player.Volume()
+	m.muted = m.player.IsMute()
 	height = tm.Height()
 	width = tm.Width()
 	return m

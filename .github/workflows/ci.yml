@@ -40,6 +40,7 @@ jobs:
           skip-cache: true
           skip-pkg-cache: true
           skip-build-cache: true
+
   unit-tests:
     name: Unit tests
     needs: [branch-naming-rules]

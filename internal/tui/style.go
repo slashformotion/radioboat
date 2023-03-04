@@ -12,6 +12,7 @@ package tui
 
 import "github.com/charmbracelet/lipgloss"
 
+// Stylesheets
 var (
 	header_center_s = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("233")).

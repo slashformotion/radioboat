@@ -39,8 +39,6 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-// rootCmd.PersistentFlags().StringVarP(&Verbose, "verbose", "v", false, "verbose output")
-
 func Execute() {
 	hm, err := homedir.Dir()
 	if err != nil {
@@ -63,27 +61,25 @@ func ui() {
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Printf("Looks like there is nothing here: %q\n", urlFilePath)
-			os.Exit(1)
 		} else if os.IsPermission(err) {
 			fmt.Printf("Looks like you don't have the permission to access the url file: %q\n", urlFilePath)
-			os.Exit(1)
 		} else if errors.Is(err, utils.ErrIsaDirectory) {
 			fmt.Printf("Looks like this is a directory: %q\n", urlFilePath)
-			os.Exit(1)
+		} else {
+			fmt.Println(err.Error())
 		}
+		os.Exit(1)
 	}
 
 	if len(stations) == 0 {
-		log.Fatalf("mmmh... Looks like your url file %q is empty", urlFilePath)
+		log.Fatalf("No stations were found in your url file %q is empty", urlFilePath)
 	}
 
 	var player players.RadioPlayer
-	player, err = players.Get_player(playerName)
+	player, err = players.GetPlayer(playerName)
 	if err != nil {
-		if errors.Is(err, players.ErrPlayerIsNotSupported) {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 
 	stat, err := os.Stat(trackFilePath)

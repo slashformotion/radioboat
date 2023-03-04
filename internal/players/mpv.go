@@ -23,11 +23,15 @@ import (
 	"github.com/slashformotion/radioboat/internal/utils"
 )
 
+// MpvPlayer is a wrapper around gompv implementing the RadioPlayer interface
 type MpvPlayer struct {
 	ipcc   *mpv.IPCClient
 	client *mpv.Client
 	url    string
 }
+
+// Check interface complience
+var _ RadioPlayer = (*MpvPlayer)(nil)
 
 func (m *MpvPlayer) Init() error {
 	socketpath := "/tmp/radioboat-" + utils.RandomString(25)
@@ -69,11 +73,12 @@ func (m *MpvPlayer) Init() error {
 		break
 	}
 
-	// Waiting to be sure that mpv ipc server is ready
 	m.ipcc = mpv.NewIPCClient(socketpath) // Lowlevel client
 	m.client = mpv.NewClient(m.ipcc)
 	return nil
 }
+
+// Play stream_url
 func (m *MpvPlayer) Play(stream_url string) {
 	err := m.client.Loadfile(stream_url, mpv.LoadFileModeReplace)
 	if err != nil {
@@ -81,12 +86,16 @@ func (m *MpvPlayer) Play(stream_url string) {
 	}
 	m.url = stream_url
 }
+
+// Mute set the mute state to true
 func (m *MpvPlayer) Mute() {
 	err := m.client.SetMute(true)
 	if err != nil {
 		panic(err)
 	}
 }
+
+// Unmute set the mute state to false
 func (m *MpvPlayer) Unmute() {
 	err := m.client.SetMute(false)
 	if err != nil {
@@ -94,6 +103,8 @@ func (m *MpvPlayer) Unmute() {
 	}
 
 }
+
+// ToggleMute toggle mute state
 func (m *MpvPlayer) ToggleMute() {
 	mute, err := m.client.Mute()
 	if err != nil {
@@ -106,6 +117,7 @@ func (m *MpvPlayer) ToggleMute() {
 	}
 }
 
+// IsMute return mute state
 func (m *MpvPlayer) IsMute() bool {
 	mute, err := m.client.Mute()
 	if err != nil {
@@ -114,7 +126,7 @@ func (m *MpvPlayer) IsMute() bool {
 	return mute
 }
 
-// Increase volume by 5%
+// IncVolume increase volume by 5%
 func (m *MpvPlayer) IncVolume() {
 	volume := m.Volume()
 	new_volume := utils.ClampInts(volume+5, 0, 110)
@@ -128,7 +140,7 @@ func (m *MpvPlayer) DecVolume() {
 	m.SetVolume(new_volume)
 }
 
-// Set volume
+// SetVolume set the volume to the desired level
 func (m *MpvPlayer) SetVolume(volume int) {
 	err := m.client.SetProperty("volume", volume)
 	if err != nil {
@@ -145,20 +157,23 @@ func (m *MpvPlayer) Volume() int {
 	return int(value)
 
 }
-func (m *MpvPlayer) Close() {
 
-}
+// Close the MpvPlayer
+func (m *MpvPlayer) Close() {}
 
+// NowPlaying return a the name of the track playin
 func (m *MpvPlayer) NowPlaying() string {
-	str, _ := m.client.GetProperty("media-title")
-	if str == "<nil>" {
+	trackname, _ := m.client.GetProperty("media-title")
+	if trackname == "<nil>" {
 		return ""
 	}
-	str = str[1 : len(str)-1]
-	if strings.Contains(m.url, str) ||
-		strings.Contains(strings.ReplaceAll(m.url, "http://", ""), str) ||
-		strings.Contains(strings.ReplaceAll(m.url, "https://", ""), str) {
+	trackname = trackname[1 : len(trackname)-1]
+	// If an URL is in the name of the track, that mean that mpv don't have the name of the track
+	// In that case we return an empty string
+	if strings.Contains(m.url, trackname) ||
+		strings.Contains(strings.ReplaceAll(m.url, "http://", ""), trackname) ||
+		strings.Contains(strings.ReplaceAll(m.url, "https://", ""), trackname) {
 		return ""
 	}
-	return str
+	return trackname
 }
