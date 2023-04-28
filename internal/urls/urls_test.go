@@ -22,17 +22,17 @@ func TestParseURLS(t *testing.T) {
 		{
 			"https://walmradio.com:8443/jazz",
 			"jazz",
-			"false",
+			"",
 		},
 		{
 			"http://channels.dinamo.fm/deep-mp3",
 			"deep",
-			"false",
+			"",
 		},
 		{
 			"http://prem2.classicalradio.com/violinworks",
 			"violin",
-			"false",
+			"",
 		},
 	})
 
