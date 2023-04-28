@@ -167,7 +167,7 @@ func (m *MpvPlayer) NowPlaying() string {
 	if trackname == "<nil>" {
 		return ""
 	}
-	trackname = trackname[1 : len(trackname)-1]
+	trackname = strings.TrimSuffix(strings.TrimPrefix(trackname, "\""), "\"")
 	// If an URL is in the name of the track, that mean that mpv don't have the name of the track
 	// In that case we return an empty string
 	if strings.Contains(m.url, trackname) ||
