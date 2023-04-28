@@ -3,7 +3,7 @@ package utils_test
 import (
 	"testing"
 
-	"github.com/slashformotion/radioboat/internal/utils"
+	"github.com/slashformotion/radioboat/utils"
 )
 
 func Test(t *testing.T) {

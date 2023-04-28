@@ -13,7 +13,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/slashformotion/radioboat/internal/buildinfo"
+	buildinfo "github.com/slashformotion/radioboat/buildinfo"
 	"github.com/spf13/cobra"
 )
 

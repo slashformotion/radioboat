@@ -20,8 +20,8 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/slashformotion/radioboat/internal/players"
-	"github.com/slashformotion/radioboat/internal/urls"
+	"github.com/slashformotion/radioboat/players"
+	"github.com/slashformotion/radioboat/urls"
 )
 
 var (

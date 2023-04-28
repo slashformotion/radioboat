@@ -20,7 +20,7 @@ import (
 
 	"github.com/jpillora/backoff"
 	mpv "github.com/slashformotion/gompv"
-	"github.com/slashformotion/radioboat/internal/utils"
+	"github.com/slashformotion/radioboat/utils"
 )
 
 // MpvPlayer is a wrapper around gompv implementing the RadioPlayer interface

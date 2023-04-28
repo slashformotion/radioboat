@@ -18,10 +18,11 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mitchellh/go-homedir"
-	"github.com/slashformotion/radioboat/internal/players"
-	"github.com/slashformotion/radioboat/internal/tui"
-	"github.com/slashformotion/radioboat/internal/urls"
-	"github.com/slashformotion/radioboat/internal/utils"
+	"github.com/slashformotion/radioboat/dbushandler"
+	"github.com/slashformotion/radioboat/players"
+	"github.com/slashformotion/radioboat/tui"
+	"github.com/slashformotion/radioboat/urls"
+	"github.com/slashformotion/radioboat/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -123,7 +124,9 @@ func ui() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	dbusServer := dbushandler.MakeDbusServer(player)
+	go dbusServer.Listen()
+	defer dbusServer.Stop()
 	p := tea.NewProgram(tui.InitialModel(player, stations, volume, trackFilePath), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)

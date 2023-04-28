@@ -17,14 +17,13 @@ import (
 	"strings"
 
 	"github.com/gocarina/gocsv"
-	"github.com/slashformotion/radioboat/internal/utils"
+	"github.com/slashformotion/radioboat/utils"
 )
 
 // Station represent a single webradio station
 type Station struct {
-	Url     string `csv:"url"`
-	Name    string `csv:"name"`
-	NotUsed string `csv:"-"`
+	Url  string `csv:"url"`
+	Name string `csv:"name"`
 }
 
 // Station
