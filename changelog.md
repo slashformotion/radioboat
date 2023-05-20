@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
-## Unreleased
+## [v0.3.0] - 20/05/2023
 
 ### Added
 
+- Add the health command: it checks if the stream url in the urlfile are still valid.
 - Now quit at startup if the url file is empty.
 
 ## [v0.2.3] - 13/11/2022
@@ -131,7 +132,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [unreleased]: https://github.com/slashformotion/radioboat/blob/master/changelog.md#unreleased
-[v0.2.3]: https://github.com/slashformotion/radioboat/blob/v0.2.2/changelog.md#unreleased
+[v0.2.3]: https://github.com/slashformotion/radioboat/blob/v0.3.0/changelog.md#unreleased
+[v0.2.3]: https://github.com/slashformotion/radioboat/blob/v0.2.3/changelog.md#unreleased
 [v0.2.2]: https://github.com/slashformotion/radioboat/blob/v0.2.2/changelog.md#unreleased
 [v0.2.1]: https://github.com/slashformotion/radioboat/blob/v0.2.1/changelog.md#unreleased
 [v0.2.0]: https://github.com/slashformotion/radioboat/blob/v0.2.0/changelog.md#unreleased
