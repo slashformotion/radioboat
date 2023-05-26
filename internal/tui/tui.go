@@ -20,6 +20,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/slashformotion/radioboat/dbus"
 	"github.com/slashformotion/radioboat/internal/players"
 	"github.com/slashformotion/radioboat/internal/urls"
 )
@@ -48,6 +49,7 @@ type model struct {
 
 	trackFilePath string
 	mb            *MessageBox
+	dbusInst      *dbus.DbusInstance
 }
 
 func HeaderToString(currentStation string, trackName string, volume int, muted bool) string {
@@ -88,7 +90,11 @@ func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 		}
 	case Tick:
-		m.currentTrack = m.player.NowPlaying()
+		title := m.player.NowPlaying()
+		dbus.UpdateMetadata(m.dbusInst, dbus.Metadata{
+			Title: title,
+		})
+		m.currentTrack = title
 		return m, CmdTickerTrackname
 	case tea.WindowSizeMsg:
 		width = msg.Width
@@ -180,7 +186,7 @@ func (m model) View() string {
 	return docStyle.Render(s)
 }
 
-func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, trackFilePath string) model {
+func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, trackFilePath string, dbusInst *dbus.DbusInstance) model {
 	m := model{
 		player:         p,
 		stations:       stations,
@@ -189,6 +195,7 @@ func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, t
 		help:           help.New(),
 		trackFilePath:  trackFilePath,
 		mb:             new(MessageBox),
+		dbusInst:       dbusInst,
 	}
 	m.player.SetVolume(volume)
 	m.volume = m.player.Volume()

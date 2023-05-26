@@ -18,6 +18,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mitchellh/go-homedir"
+	"github.com/slashformotion/radioboat/dbus"
 	"github.com/slashformotion/radioboat/internal/players"
 	"github.com/slashformotion/radioboat/internal/tui"
 	"github.com/slashformotion/radioboat/internal/urls"
@@ -57,6 +58,7 @@ func Execute() {
 }
 
 func ui() {
+
 	stations, err := urls.ParseUrlFile(urlFilePath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -81,6 +83,8 @@ func ui() {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
+	dbusInstance := dbus.CreateDbusInstance(player)
+	defer dbusInstance.CloseConnection()
 
 	stat, err := os.Stat(trackFilePath)
 	if err != nil {
@@ -119,12 +123,13 @@ func ui() {
 		fmt.Printf("Looks like this is a directory: %q\n", trackFilePath)
 		os.Exit(1)
 	}
+
 	err = player.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	p := tea.NewProgram(tui.InitialModel(player, stations, volume, trackFilePath), tea.WithAltScreen())
+	p := tea.NewProgram(tui.InitialModel(player, stations, volume, trackFilePath, dbusInstance), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)

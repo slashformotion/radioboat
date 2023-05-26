@@ -104,6 +104,17 @@ func (m *MpvPlayer) Unmute() {
 
 }
 
+func (m *MpvPlayer) Pause() {
+	_, err := m.client.Pause()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (m *MpvPlayer) Resume() {
+	// nothing for now
+}
+
 // ToggleMute toggle mute state
 func (m *MpvPlayer) ToggleMute() {
 	mute, err := m.client.Mute()

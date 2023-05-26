@@ -61,4 +61,7 @@ type RadioPlayer interface {
 
 	// NowPlaying return a the name of the track playing
 	NowPlaying() string
+
+	Pause()
+	Resume()
 }
