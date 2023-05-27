@@ -18,7 +18,7 @@ jobs:
         with:
           regex: '^(feature|bugfix|improvement|library|prerelease|release|hotfix|poc)\/[a-z0-9_.-]+$'
           allowed_prefixes: 'feature,bugfix,improvement,library,prerelease,release,hotfix,poc'
-          ignore: main,dev
+          ignore: master,main,dev
           min_length: 5
           max_length: 50
 
