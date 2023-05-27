@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## Unreleased
+
+### Changed 
+
+- The audio player "backend" was changed from an IPC based implementation to an implementation based on libmpv (in C).
+- The buildinfo package was deleted and it's content where moved to the cmd package 
+
+### Removed
+
+- The "player" CLI flag was removed.
+
 ## [v0.3.0] - 20/05/2023
 
 ### Added
