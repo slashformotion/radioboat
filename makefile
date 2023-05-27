@@ -11,10 +11,10 @@ Commit=$(shell git log --format="%H" -n 1)
 # Setup the -ldflags option for build info here, interpolate the variable values
 # notice: replace the path with your versionInfo module path
 LDFLAGS=-ldflags "-w -s \
--X github.com/slashformotion/radioboat/internal/buildinfo.Version=${Version} \
--X github.com/slashformotion/radioboat/internal/buildinfo.Commit=${Commit} \
--X github.com/slashformotion/radioboat/internal/buildinfo.BuildDate=${BuildDate} \
--X github.com/slashformotion/radioboat/internal/buildinfo.VendorInfo=${VendorInfo} \
+-X github.com/slashformotion/radioboat/cmd.Version=${Version} \
+-X github.com/slashformotion/radioboat/cmd.Commit=${Commit} \
+-X github.com/slashformotion/radioboat/cmd.BuildDate=${BuildDate} \
+-X github.com/slashformotion/radioboat/cmd.VendorInfo=${VendorInfo} \
 -X main.VendorInfo=${VendorInfo} \
 "
 
