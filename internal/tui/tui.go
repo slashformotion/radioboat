@@ -23,7 +23,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/slashformotion/radioboat/internal/players"
+	player "github.com/slashformotion/radioboat/internal/player"
 	"github.com/slashformotion/radioboat/internal/urls"
 )
 
@@ -41,7 +41,7 @@ type model struct {
 	savedTracks []string
 	stations    []*urls.Station
 	cursor      int
-	player      *players.MpvPlayer
+	player      *player.MpvPlayer
 	help        help.Model
 
 	currentStation string
@@ -101,7 +101,7 @@ func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
 	case mpv.Event:
 		switch msg.EventId {
 		case mpv.EVENT_PROPERTY_CHANGE:
-			if msg.ReplyUserData == players.UserRequestID_media_title {
+			if msg.ReplyUserData == player.UserRequestID_media_title {
 				trackName, ok := msg.Property().Data.(string)
 				if ok {
 					m.currentTrack = trackName
@@ -202,7 +202,7 @@ func (m model) View() string {
 	return docStyle.Render(s)
 }
 
-func InitialModel(p *players.MpvPlayer, stations []*urls.Station, volume int, trackFilePath string, chanEvent chan mpv.Event) model {
+func InitialModel(p *player.MpvPlayer, stations []*urls.Station, volume int, trackFilePath string, chanEvent chan mpv.Event) model {
 	m := model{
 		player:         p,
 		stations:       stations,

@@ -18,7 +18,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mitchellh/go-homedir"
-	"github.com/slashformotion/radioboat/internal/players"
+	players "github.com/slashformotion/radioboat/internal/player"
 	"github.com/slashformotion/radioboat/internal/tui"
 	"github.com/slashformotion/radioboat/internal/urls"
 	"github.com/slashformotion/radioboat/internal/utils"
