@@ -52,11 +52,11 @@ var DefaultKeyMap = KeyMap{
 		key.WithHelp("Enter", "Play station"),
 	),
 	VolumeUp: key.NewBinding(
-		key.WithKeys("*"),
+		key.WithKeys("*", "-"),
 		key.WithHelp("*", "Increase volume"),
 	),
 	VolumeDown: key.NewBinding(
-		key.WithKeys("/"),
+		key.WithKeys("/", "-"),
 		key.WithHelp("/", "Decrease volume"),
 	),
 	Quit: key.NewBinding(

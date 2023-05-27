@@ -16,7 +16,9 @@ require (
 )
 
 require (
+	github.com/HuntClauss/mpvgo v0.0.0-20220123165452-4ed47f1badd4 // indirect
 	github.com/aymanbagabas/go-osc52 v1.0.3 // indirect
+	github.com/aynakeya/go-mpv v0.0.6 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

@@ -1,6 +1,10 @@
+github.com/HuntClauss/mpvgo v0.0.0-20220123165452-4ed47f1badd4 h1:gZHhAFTkTrVhyp9uPubKPhGEt5ecPtpdc1/Q7tvo90Q=
+github.com/HuntClauss/mpvgo v0.0.0-20220123165452-4ed47f1badd4/go.mod h1:JXZ7orJvwDu2yVXMq/h+X3+6/alxEoRtXo9lnme0l+U=
 github.com/atotto/clipboard v0.1.4/go.mod h1:ZY9tmq7sm5xIbd9bOK4onWV4S6X0u6GY7Vn0Yu86PYI=
 github.com/aymanbagabas/go-osc52 v1.0.3 h1:DTwqENW7X9arYimJrPeGZcV0ln14sGMt3pHZspWD+Mg=
 github.com/aymanbagabas/go-osc52 v1.0.3/go.mod h1:zT8H+Rk4VSabYN90pWyugflM3ZhpTZNC7cASDfUCdT4=
+github.com/aynakeya/go-mpv v0.0.6 h1:WCBwHrzl700C1J3f+aXR+URw/OKYPjwUjDW9diOsXYY=
+github.com/aynakeya/go-mpv v0.0.6/go.mod h1:do6ImaEyt9dlQ7JRS/8ke+P9q4kGW8+Bf6j3faBQOfE=
 github.com/buger/goterm v1.0.4 h1:Z9YvGmOih81P0FbVtEYTFF6YsSgxSUKEhf/f9bTMXbY=
 github.com/buger/goterm v1.0.4/go.mod h1:HiFWV3xnkolgrBV3mY8m0X0Pumt4zg4QhbdOzQtB8tE=
 github.com/charmbracelet/bubbles v0.14.0 h1:DJfCwnARfWjZLvMglhSQzo76UZ2gucuHPy9jLWX45Og=
@@ -28,6 +32,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46t
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/gen2brain/go-mpv v0.0.0-20230511113453-8da878ada2f0 h1:MfIYcVW/SnRiBlZNCCyfJMmBd66Udi7MEVQjrFKjEQI=
+github.com/gen2brain/go-mpv v0.0.0-20230511113453-8da878ada2f0/go.mod h1:fslC5vg+Va6olxf06TAMAs2DFkZJAuhQ38pXLAfIjxQ=
 github.com/gocarina/gocsv v0.0.0-20221105105431-c8ef78125b99 h1:qNAaZUnCulf2xIQc7rM6F3uGYr80h40rtilsVKyAHoM=
 github.com/gocarina/gocsv v0.0.0-20221105105431-c8ef78125b99/go.mod h1:5YoVOkjYAQumqlV356Hj3xeYh4BdZuLE0/nRkf2NKkI=
 github.com/inconshreveable/mousetrap v1.0.1 h1:U3uMjPSQEBMNp1lFxmllqCPM6P5u/Xq7Pgzkat/bFNc=

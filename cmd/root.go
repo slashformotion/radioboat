@@ -27,7 +27,6 @@ import (
 
 var urlFilePath string
 var volume int
-var playerName string
 var trackFilePath string
 
 var rootCmd = &cobra.Command{
@@ -47,7 +46,6 @@ func Execute() {
 
 	rootCmd.PersistentFlags().StringVarP(&urlFilePath, "url-file", "u", hm+"/.config/radioboat/urls.csv", "Use an alternative URL file")
 	rootCmd.Flags().IntVar(&volume, "volume", 80, "Set the volume when the application is launched")
-	rootCmd.Flags().StringVar(&playerName, "player", "mpv", "Set the player to be used")
 	rootCmd.Flags().StringVarP(&trackFilePath, "track-file", "t", hm+"/.tracks", "Use an alternative track text file")
 
 	if err := rootCmd.Execute(); err != nil {
@@ -73,13 +71,6 @@ func ui() {
 
 	if len(stations) == 0 {
 		log.Fatalf("No stations were found in your url file %q is empty", urlFilePath)
-	}
-
-	var player players.RadioPlayer
-	player, err = players.GetPlayer(playerName)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
 	}
 
 	stat, err := os.Stat(trackFilePath)
@@ -119,14 +110,18 @@ func ui() {
 		fmt.Printf("Looks like this is a directory: %q\n", trackFilePath)
 		os.Exit(1)
 	}
+	player := players.NewMpv()
 	err = player.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
+	chanEvent := player.Events()
 
-	p := tea.NewProgram(tui.InitialModel(player, stations, volume, trackFilePath), tea.WithAltScreen())
+	defer player.Close()
+	p := tea.NewProgram(tui.InitialModel(player, stations, volume, trackFilePath, chanEvent), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
 	}
+	fmt.Println("Exiting...")
 }

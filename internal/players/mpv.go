@@ -11,76 +11,44 @@ package players
 // limitations under the License.
 
 import (
-	"fmt"
-	"net"
-	"os/exec"
 	"strings"
-	"syscall"
 	"time"
 
-	"github.com/jpillora/backoff"
-	mpv "github.com/slashformotion/gompv"
+	mpv "github.com/aynakeya/go-mpv"
 	"github.com/slashformotion/radioboat/internal/utils"
 )
 
 // MpvPlayer is a wrapper around gompv implementing the RadioPlayer interface
 type MpvPlayer struct {
-	ipcc   *mpv.IPCClient
-	client *mpv.Client
-	url    string
+	handle    *mpv.Mpv
+	url       string
+	done      chan bool
+	eventChan chan mpv.Event
 }
 
-// Check interface complience
-var _ RadioPlayer = (*MpvPlayer)(nil)
-
-func (m *MpvPlayer) Init() error {
-	socketpath := "/tmp/radioboat-" + utils.RandomString(25)
-	cmd := exec.Command("mpv", "--idle", "--no-video",
-		fmt.Sprintf("--input-ipc-server=%s", socketpath))
-	// Bind the child process to radioboat process. When radioboat exit, mpv will receive a SIGTERM
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Pdeathsig: syscall.SIGTERM,
+func NewMpv() *MpvPlayer {
+	return &MpvPlayer{
+		handle: nil,
+		url:    "",
+		done:   make(chan bool),
 	}
+}
 
-	retry := backoff.Backoff{
-		Factor: 3,
-		Jitter: false,
-		Min:    10 * time.Millisecond,
-		Max:    2 * time.Second,
-	}
-	// starting mpv
-	err := cmd.Start()
+const UserRequestID_media_title uint64 = 20000001
+
+func (m *MpvPlayer) Init() (err error) {
+	m.handle = mpv.Create()
+	err = m.handle.Initialize()
 	if err != nil {
 		return err
 	}
-	// Exponential backoff
-	var numberOfTimeConnectionTried uint
-	for {
-		numberOfTimeConnectionTried += 1
-		conn, err := net.Dial("unix", socketpath)
-		if err != nil {
-			currentSpleepTime := retry.Duration()
-			if currentSpleepTime == retry.Max {
-				return fmt.Errorf(
-					"failed to connect to mpv (socketpath=%s, tried to connect %d time)",
-					socketpath,
-					numberOfTimeConnectionTried)
-			}
-			time.Sleep(currentSpleepTime)
-			continue
-		}
-		conn.Close()
-		break
-	}
-
-	m.ipcc = mpv.NewIPCClient(socketpath) // Lowlevel client
-	m.client = mpv.NewClient(m.ipcc)
-	return nil
+	err = m.handle.ObserveProperty(UserRequestID_media_title, "media-title", mpv.FORMAT_STRING)
+	return err
 }
 
 // Play stream_url
 func (m *MpvPlayer) Play(stream_url string) {
-	err := m.client.Loadfile(stream_url, mpv.LoadFileModeReplace)
+	err := m.handle.Command([]string{"loadfile", stream_url, "replace"})
 	if err != nil {
 		panic(err)
 	}
@@ -89,7 +57,7 @@ func (m *MpvPlayer) Play(stream_url string) {
 
 // Mute set the mute state to true
 func (m *MpvPlayer) Mute() {
-	err := m.client.SetMute(true)
+	err := m.handle.SetProperty("mute", mpv.FORMAT_FLAG, true)
 	if err != nil {
 		panic(err)
 	}
@@ -97,20 +65,15 @@ func (m *MpvPlayer) Mute() {
 
 // Unmute set the mute state to false
 func (m *MpvPlayer) Unmute() {
-	err := m.client.SetMute(false)
+	err := m.handle.SetProperty("mute", mpv.FORMAT_FLAG, false)
 	if err != nil {
 		panic(err)
 	}
-
 }
 
 // ToggleMute toggle mute state
 func (m *MpvPlayer) ToggleMute() {
-	mute, err := m.client.Mute()
-	if err != nil {
-		panic(err)
-	}
-	if mute {
+	if m.IsMute() {
 		m.Unmute()
 	} else {
 		m.Mute()
@@ -119,11 +82,11 @@ func (m *MpvPlayer) ToggleMute() {
 
 // IsMute return mute state
 func (m *MpvPlayer) IsMute() bool {
-	mute, err := m.client.Mute()
+	mute, err := m.handle.GetProperty("mute", mpv.FORMAT_FLAG)
 	if err != nil {
 		panic(err)
 	}
-	return mute
+	return mute.(bool)
 }
 
 // IncVolume increase volume by 5%
@@ -142,7 +105,7 @@ func (m *MpvPlayer) DecVolume() {
 
 // SetVolume set the volume to the desired level
 func (m *MpvPlayer) SetVolume(volume int) {
-	err := m.client.SetProperty("volume", volume)
+	err := m.handle.SetProperty("volume", mpv.FORMAT_INT64, int64(volume))
 	if err != nil {
 		panic(err)
 	}
@@ -150,23 +113,27 @@ func (m *MpvPlayer) SetVolume(volume int) {
 
 // Return the volume in percentage
 func (m *MpvPlayer) Volume() int {
-	value, err := m.client.Volume()
+	value, err := m.handle.GetProperty("volume", mpv.FORMAT_INT64)
 	if err != nil {
 		panic(err)
 	}
-	return int(value)
-
+	return int(value.(int64))
 }
 
 // Close the MpvPlayer
-func (m *MpvPlayer) Close() {}
+func (m *MpvPlayer) Close() {
+	m.done <- true // terminating event loop
+	close(m.eventChan)
+	m.handle.TerminateDestroy()
+}
 
 // NowPlaying return a the name of the track playin
 func (m *MpvPlayer) NowPlaying() string {
-	trackname, _ := m.client.GetProperty("media-title")
-	if trackname == "<nil>" {
+	trackname_interface, _ := m.handle.GetProperty("media-title", mpv.FORMAT_STRING)
+	if trackname_interface == nil {
 		return ""
 	}
+	trackname := trackname_interface.(string)
 	trackname = strings.TrimSuffix(strings.TrimPrefix(trackname, "\""), "\"")
 	// If an URL is in the name of the track, that mean that mpv don't have the name of the track
 	// In that case we return an empty string
@@ -176,4 +143,23 @@ func (m *MpvPlayer) NowPlaying() string {
 		return ""
 	}
 	return trackname
+}
+
+func (m *MpvPlayer) Events() chan mpv.Event {
+	c := make(chan mpv.Event)
+	go func() {
+		for {
+			select {
+			case <-m.done:
+				return
+			case <-time.After(time.Millisecond):
+				e := m.handle.WaitEvent(1)
+				if e != nil {
+					c <- *e
+				}
+			}
+		}
+	}()
+	m.eventChan = c
+	return c
 }
