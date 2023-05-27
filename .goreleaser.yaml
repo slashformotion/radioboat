@@ -13,7 +13,7 @@ builds:
       - linux
     # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
     ldflags:
-      - -s -w -X github.com/slashformotion/radioboat/internal/buildinfo.Version={{.Version}} -X github.com/slashformotion/radioboat/internal/buildinfo.Commit={{.Commit}} -X github.com/slashformotion/radioboat/internal/buildinfo.BuildDate={{.Date}} -X github.com/slashformotion/radioboat/internal/buildinfo.VendorInfo=goreleaser 
+      - -s -w -X github.com/slashformotion/radioboat/cmd.Version={{.Version}} -X github.com/slashformotion/radioboat/cmd.Commit={{.Commit}} -X github.com/slashformotion/radioboat/cmd.BuildDate={{.Date}} -X github.com/slashformotion/radioboat/cmd.VendorInfo=goreleaser 
 archives:
   - replacements:
       darwin: Darwin
