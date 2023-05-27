@@ -10,11 +10,14 @@ package tui
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// #include <mpv/client.h>
+// #include <stdlib.h>
+import "C"
 import (
 	"fmt"
 	"os"
-	"time"
 
+	mpv "github.com/aynakeya/go-mpv"
 	tm "github.com/buger/goterm"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -38,7 +41,7 @@ type model struct {
 	savedTracks []string
 	stations    []*urls.Station
 	cursor      int
-	player      players.RadioPlayer
+	player      *players.MpvPlayer
 	help        help.Model
 
 	currentStation string
@@ -48,6 +51,8 @@ type model struct {
 
 	trackFilePath string
 	mb            *MessageBox
+
+	chanEvent chan mpv.Event
 }
 
 func HeaderToString(currentStation string, trackName string, volume int, muted bool) string {
@@ -68,7 +73,13 @@ func HeaderToString(currentStation string, trackName string, volume int, muted b
 }
 
 func (m model) Init() tea.Cmd {
-	return tea.Batch(CmdTickerMessageBox, CmdTickerTrackname)
+	return tea.Batch(CmdTickerMessageBox, waitForMpvEvent(m.chanEvent))
+}
+
+func log(i ...any) {
+	f, _ := tea.LogToFile("log.log", "")
+	fmt.Fprintln(f, i...)
+	f.Close()
 }
 
 func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
@@ -87,9 +98,20 @@ func (m model) Update(tmsg tea.Msg) (tea.Model, tea.Cmd) {
 				NewMessage(fmt.Sprintf("Just saved track name %q to %q", msg.trackName, m.trackFilePath)),
 			)
 		}
-	case Tick:
-		m.currentTrack = m.player.NowPlaying()
-		return m, CmdTickerTrackname
+	case mpv.Event:
+		switch msg.EventId {
+		case mpv.EVENT_PROPERTY_CHANGE:
+			if msg.ReplyUserData == players.UserRequestID_media_title {
+				trackName, ok := msg.Property().Data.(string)
+				if ok {
+					m.currentTrack = trackName
+				} else {
+					m.currentTrack = ""
+				}
+			}
+		}
+		return m, waitForMpvEvent(m.chanEvent)
+
 	case tea.WindowSizeMsg:
 		width = msg.Width
 		height = msg.Height
@@ -180,7 +202,7 @@ func (m model) View() string {
 	return docStyle.Render(s)
 }
 
-func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, trackFilePath string) model {
+func InitialModel(p *players.MpvPlayer, stations []*urls.Station, volume int, trackFilePath string, chanEvent chan mpv.Event) model {
 	m := model{
 		player:         p,
 		stations:       stations,
@@ -189,6 +211,7 @@ func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, t
 		help:           help.New(),
 		trackFilePath:  trackFilePath,
 		mb:             new(MessageBox),
+		chanEvent:      chanEvent,
 	}
 	m.player.SetVolume(volume)
 	m.volume = m.player.Volume()
@@ -198,14 +221,12 @@ func InitialModel(p players.RadioPlayer, stations []*urls.Station, volume int, t
 	return m
 }
 
-// wait 1 sec and then send a Tick
-func CmdTickerTrackname() tea.Msg {
-	time.Sleep(time.Second)
-	return Tick{}
+// A command that waits for the activity on a channel.
+func waitForMpvEvent(chanEvent chan mpv.Event) tea.Cmd {
+	return func() tea.Msg {
+		return <-chanEvent
+	}
 }
-
-// tea.Msg send by CmdTickerTrackname
-type Tick struct{}
 
 func CmdSaveTrack(trackFilePath, track string) tea.Cmd {
 	return func() tea.Msg {

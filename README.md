@@ -17,8 +17,9 @@
 ![](https://raw.githubusercontent.com/slashformotion/radioboat/master/.github/assets/screencast.gif)
 
 ## **Features**
-- Save the current track name to a text file.
+
 - Play radios.
+- Save the current track name to a text file.
 
 ## Installation
 
@@ -37,7 +38,6 @@ go install github.com/slashformotion/radioboat@latest
 ```
 ## How to Use ? 
 
-> please head to the [wiki](https://github.com/slashformotion/radioboat/wiki) for more informations 
 
 - Copy the sample [stations.csv](https://github.com/slashformotion/radioboat/blob/master/stations.csv) to ~/.config/radioboat/urls.csv.
 - Add the audio stream of your choice and give them a name
@@ -45,11 +45,14 @@ go install github.com/slashformotion/radioboat@latest
 ```bash
 radioboat
 ```
+
 Then, follow the intructions at the bottom of the screen.
+
+> please head to the [wiki](https://github.com/slashformotion/radioboat/wiki) for more informations 
 
 ## Dependencies
 
-- [mpv](https://mpv/io) (although this programm could be adapted easily to use other tools capable of reading audio streams)
+- [libmpv](https://mpv.io): please head to [pkgs.org](https://pkgs.org/search/?q=libmpv) to see what package to install.
 - Various golang libraries: see [go.mod](https://github.com/slashformotion/radioboat/blob/master/go.mod)
 
 
@@ -59,7 +62,7 @@ The contribution guidelines are as per the guide [HERE](https://github.com/slash
 
 ## Licence
 
-Copyright 2022 slashformotion
+Copyright 2023 slashformotion
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
