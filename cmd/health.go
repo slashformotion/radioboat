@@ -69,9 +69,10 @@ func health(cmd *cobra.Command, args []string) {
 
 // A result after a check
 type Result struct {
-	station urls.Station
-	valid   bool
-	err     string
+	station    urls.Station
+	valid      bool
+	statusCode string
+	err        error
 }
 
 // bubbletea model
@@ -143,9 +144,8 @@ func createErrorGrid(m healthModel) string {
 	names := ""
 	errs := ""
 	for _, res := range m.errors {
-		names += "- " + res.station.Name + "\n"
-		errs += fmt.Sprintf(" : %s", res.err)
-
+		names += fmt.Sprintf("- %s (%s)\n", res.station.Name, res.station.Url)
+		errs += fmt.Sprintf(" : %s\n", res.err.Error())
 	}
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, names, errs)
@@ -169,14 +169,15 @@ func makeCmd(station urls.Station) tea.Cmd {
 		}
 		resp, err := http.Get(station.Url)
 		if err != nil {
-			msg.err = err.Error()
+			msg.err = fmt.Errorf("failed to ping station: %w", err)
 			return msg
 		}
 		defer resp.Body.Close()
+		msg.statusCode = resp.Status
 		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 			msg.valid = true
 		} else {
-			msg.err = fmt.Sprintf("got %d", resp.StatusCode)
+			msg.err = fmt.Errorf("radio response => %q", resp.Status)
 		}
 		return msg
 	}
