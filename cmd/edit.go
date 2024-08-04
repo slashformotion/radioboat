@@ -27,8 +27,6 @@ var lsCmd = &cobra.Command{
 You need to have correct environment variables set up. 
 To do that please head to the wiki: https://github.com/slashformotion/radioboat/wiki/Configuration`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// editor = osutil.GetOptEnv("EDITOR"))
-		// cm := exec.Command("nvim", urlFilePath, "</dev/tty")
 		prefEditor := os.Getenv("RADIOBOAT_EDITOR")
 		editor := os.Getenv("EDITOR")
 		if prefEditor != "" {
@@ -55,14 +53,4 @@ To do that please head to the wiki: https://github.com/slashformotion/radioboat/
 
 func init() {
 	rootCmd.AddCommand(lsCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// lsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// lsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

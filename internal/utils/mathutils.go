@@ -10,6 +10,7 @@ package utils
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// added because someone didn't like this proposal https://github.com/golang/go/issues/58146
 func ClampInts(v, min, max int) int {
 	if v > max {
 		return max

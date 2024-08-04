@@ -10,21 +10,9 @@ on:
     branches: [ '**' ]
 
 jobs:
-  branch-naming-rules:
-    name: Check branch name
-    runs-on: ubuntu-latest
-    steps:
-      - uses: deepakputhraya/action-branch-name@master
-        with:
-          regex: '^(feature|bugfix|improvement|library|prerelease|release|hotfix|poc)\/[a-z0-9_.-]+$'
-          allowed_prefixes: 'feature,bugfix,improvement,library,prerelease,release,hotfix,poc'
-          ignore: master,main,dev
-          min_length: 5
-          max_length: 50
 
   check-style:
     name: Code style
-    needs: [branch-naming-rules]
     runs-on: ubuntu-latest
     steps:
       - uses: awalsh128/cache-apt-pkgs-action@latest
@@ -47,7 +35,6 @@ jobs:
 
   unit-tests:
     name: Unit tests
-    needs: [branch-naming-rules]
     runs-on: ubuntu-latest
     steps:
       - uses: awalsh128/cache-apt-pkgs-action@latest
@@ -74,7 +61,7 @@ jobs:
     needs: [unit-tests]
     strategy:
       matrix:
-        go_version: ['1.18.x', '1.19.x', '1.20.x']
+        go_version: ['1.20.x', '1.21.x', '1.22.x']
     steps:
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
