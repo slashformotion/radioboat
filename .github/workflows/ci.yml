@@ -15,40 +15,29 @@ jobs:
     name: Code style
     runs-on: ubuntu-latest
     steps:
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: libmpv-dev
-          version: 1.0
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v3
+      - uses: cachix/install-nix-action@v25
         with:
-          go-version: '^1.19'
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: latest
-          skip-cache: true
-          skip-pkg-cache: true
-          skip-build-cache: true
+          nix_path: nixpkgs=channel:nixos-unstable
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - name: Lint
+        run:  nix develop --command golangci-lint run
 
   unit-tests:
     name: Unit tests
     runs-on: ubuntu-latest
-    steps:
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: libmpv-dev
-          version: 1.0
-      - uses: actions/checkout@v3
+    steps:      
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v3
+      - uses: cachix/install-nix-action@v25
         with:
-          go-version: '^1.19'
+          nix_path: nixpkgs=channel:nixos-unstable
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
       - name: Run units tests
-        run: go test -json ./... > test.json
+        run: nix develop --command go test -json ./... > test.json
       - name: Annotate tests
         if: always()
         uses: guyarb/golang-test-annotations@v0.5.1
@@ -59,25 +48,13 @@ jobs:
     name: Build Radioboat
     runs-on: ubuntu-latest
     needs: [unit-tests]
-    strategy:
-      matrix:
-        go_version: ['1.20.x', '1.21.x', '1.22.x']
     steps:
-      - uses: awalsh128/cache-apt-pkgs-action@latest
+      - uses: actions/checkout@v4
         with:
-          packages: libmpv-dev
-          version: 1.0
-      - uses: actions/checkout@v2
+          fetch-depth: 0
+      - uses: cachix/install-nix-action@v25
         with:
-            fetch-depth: 0
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: ${{ matrix.go_version }}
-      - name: Build
-        run: go build -v .
-      - name: Upload binary 
-        uses: actions/upload-artifact@v1
-        with:
-          name: binary_${{ matrix.go_version }}
-          path: ./radioboat
+          nix_path: nixpkgs=channel:nixos-unstable
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - name: Build package
+        run: nix build

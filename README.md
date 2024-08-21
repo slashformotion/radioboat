@@ -5,7 +5,7 @@
 ██   ██ ██   ██ ██   ██ ██ ██    ██ ██   ██ ██    ██ ██   ██    ██    
 ██   ██ ██   ██ ██████  ██  ██████  ██████   ██████  ██   ██    ██    
 ```
-[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/slashformotion/radioboat)
+
 ![Contributors](https://img.shields.io/github/contributors/slashformotion/radioboat)
 ![Forks](https://img.shields.io/github/forks/slashformotion/radioboat)
 ![Stars](https://img.shields.io/github/stars/slashformotion/radioboat)

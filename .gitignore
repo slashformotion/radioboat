@@ -26,3 +26,5 @@ log.log
 GHTOKEN
 dist
 t.txt
+.direnv
+result

@@ -1,6 +1,8 @@
 {pkgs ? import <nixpkgs> {}}:
 pkgs.mkShell {
   # nativeBuildInputs is usually what you want -- tools you need to run
+  buildInputs = [pkgs.mpv];
+
   nativeBuildInputs = with pkgs; [
     gnumake
 
@@ -9,8 +11,6 @@ pkgs.mkShell {
     gopls
     go-tools
     delve
-
-    # lib
-    mpv
+    golangci-lint
   ];
 }
