@@ -6,7 +6,8 @@ use std::io::stdout;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
+use clap_complete::{generate, Shell};
 use config::{fetch_remote_stations, load_config};
 use crossterm::{
     execute,
@@ -45,6 +46,12 @@ enum Commands {
     ConfigEdit {
         #[arg(short, long, default_value = DEFAULT_CONFIG_PATH)]
         config: String,
+    },
+
+    #[command(about = "Generate shell completions")]
+    Completion {
+        #[arg(value_enum)]
+        shell: Shell,
     },
 }
 
@@ -88,6 +95,10 @@ async fn main() -> anyhow::Result<()> {
                 std::fs::write(&expanded_path, DEFAULT_CONFIG_TEMPLATE)?;
             }
             open_in_editor(&config)?;
+            return Ok(());
+        }
+        Some(Commands::Completion { shell }) => {
+            generate(shell, &mut Args::command(), "radioboat", &mut stdout());
             return Ok(());
         }
         None => {}

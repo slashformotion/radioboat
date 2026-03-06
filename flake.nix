@@ -18,7 +18,7 @@
       in function pkgs);
   in {
     packages = forAllSystems (pkgs: {
-      default = pkgs.callPackage ./default.nix {};
+      default = pkgs.callPackage ./package.nix {};
     });
     devShells = forAllSystems (pkgs: {
       default = import ./shell.nix {inherit pkgs;};

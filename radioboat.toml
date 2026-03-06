@@ -10,7 +10,7 @@ muted = false
 # Remote station list imports (optional)
 # Can be HTTP/HTTPS URLs or local file paths
 [[imports]]
-name = "Example Remote Stations"
+name = "my small list"
 url = "./remote.toml"
 
 # [[imports]]
