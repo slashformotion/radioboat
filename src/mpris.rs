@@ -25,7 +25,7 @@ impl Default for MprisState {
             station_name: String::new(),
             track_title: String::new(),
             url: String::new(),
-            volume: 0.8,
+            volume: 80.0,
             muted: false,
         }
     }
@@ -116,12 +116,12 @@ impl MediaPlayer2Player {
     }
 
     #[zbus(property)]
-    async fn minimum_rate(&self) -> f64 {
+    fn minimum_rate(&self) -> f64 {
         1.0
     }
 
     #[zbus(property)]
-    async fn maximum_rate(&self) -> f64 {
+    fn maximum_rate(&self) -> f64 {
         1.0
     }
 
@@ -145,21 +145,24 @@ impl MediaPlayer2Player {
     }
 
     #[zbus(property)]
-    async fn position(&self) -> i64 {
+    fn position(&self) -> i64 {
         0
     }
 
     #[zbus(property)]
-    async fn metadata(&self) -> HashMap<&str, zbus::zvariant::Value<'_>> {
+    async fn metadata(&self) -> HashMap<&'static str, zbus::zvariant::Value<'static>> {
         let state = self.state.lock().await;
-        let mut metadata: HashMap<&str, zbus::zvariant::Value<'_>> = HashMap::new();
+        let mut metadata: HashMap<&'static str, zbus::zvariant::Value<'static>> = HashMap::new();
 
         let trackid = if state.playing {
             "/org/mpris/MediaPlayer2/Track1"
         } else {
             "/org/mpris/MediaPlayer2/NoTrack"
         };
-        metadata.insert("mpris:trackid", zbus::zvariant::Value::new(trackid));
+        metadata.insert(
+            "mpris:trackid",
+            zbus::zvariant::Value::new(trackid.to_owned()),
+        );
 
         let title = if state.track_title.is_empty() {
             state.station_name.clone()
@@ -196,7 +199,7 @@ impl MediaPlayer2Player {
 
     #[zbus(property)]
     fn can_pause(&self) -> bool {
-        false
+        true
     }
 
     #[zbus(property)]
@@ -229,15 +232,25 @@ impl MediaPlayer2Player {
     }
 
     async fn pause(&self) -> Result<()> {
-        Err(zbus::fdo::Error::NotSupported(
-            "Pause not supported for radio streams".into(),
-        ))
+        if let Some(cb) = self.stop_callback.lock().await.as_ref() {
+            cb();
+        }
+        Ok(())
     }
 
     async fn play_pause(&self) -> Result<()> {
-        Err(zbus::fdo::Error::NotSupported(
-            "Pause not supported for radio streams".into(),
-        ))
+        let playing = self.state.lock().await.playing;
+        if playing {
+            if let Some(cb) = self.stop_callback.lock().await.as_ref() {
+                cb();
+            }
+        } else {
+            let url = self.state.lock().await.url.clone();
+            if let Some(cb) = self.play_callback.lock().await.as_ref() {
+                cb(url);
+            }
+        }
+        Ok(())
     }
 
     async fn stop(&self) -> Result<()> {

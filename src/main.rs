@@ -158,7 +158,7 @@ async fn main() -> anyhow::Result<()> {
     let event_handler = EventHandler::new(Duration::from_millis(100));
 
     #[cfg(target_os = "linux")]
-    {
+    let _mpris_server = {
         let sender = event_handler.sender();
         let mut mpris_server = mpris::MprisServer::new();
         let mpris_state_clone = mpris_server.state();
@@ -230,10 +230,14 @@ async fn main() -> anyhow::Result<()> {
         }
 
         app.set_mpris_state(mpris_state_clone);
-    }
+        Some(mpris_server)
+    };
+    #[cfg(not(target_os = "linux"))]
+    let _mpris_server: Option<()> = None;
 
     let res = run_app(&mut terminal, &mut app, event_handler, args.ui_size).await;
 
+    drop(_mpris_server);
     restore_terminal(args.ui_size)?;
 
     if let Err(e) = res {
