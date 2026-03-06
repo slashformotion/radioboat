@@ -16,7 +16,6 @@ pub fn draw(frame: &mut ratatui::Frame, app: &App, area: Rect) {
         Constraint::Min(1),
         Constraint::Length(msg_height),
         Constraint::Length(1),
-        Constraint::Length(1),
     ])
     .split(area);
 
@@ -26,7 +25,6 @@ pub fn draw(frame: &mut ratatui::Frame, app: &App, area: Rect) {
         draw_messages(frame, app, chunks[2]);
     }
     draw_help_bar(frame, chunks[3]);
-    draw_bottom_line(frame, chunks[4]);
 
     if app.show_help() {
         draw_help_popup(frame, area);
@@ -198,7 +196,8 @@ fn draw_help_bar(frame: &mut ratatui::Frame, area: Rect) {
         ("?", "Help"),
         ("Enter", "Play"),
         ("m", "Mute"),
-        ("+/-", "Vol"),
+        ("*/+", "Vol+"),
+        ("-/\\", "Vol-"),
         ("q", "Quit"),
     ];
 
@@ -222,17 +221,6 @@ fn draw_help_bar(frame: &mut ratatui::Frame, area: Rect) {
 
     let line = Line::from(spans);
     let paragraph = Paragraph::new(line).alignment(ratatui::layout::Alignment::Center);
-    frame.render_widget(paragraph, area);
-}
-
-fn draw_bottom_line(frame: &mut ratatui::Frame, area: Rect) {
-    let line = Line::styled(
-        " radioboat ",
-        Style::default()
-            .fg(Color::Rgb(36, 36, 36))
-            .bg(Color::Rgb(255, 95, 135)),
-    );
-    let paragraph = Paragraph::new(line).alignment(ratatui::layout::Alignment::Left);
     frame.render_widget(paragraph, area);
 }
 
