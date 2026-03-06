@@ -6,6 +6,8 @@ use tokio::net::UnixStream;
 use tokio::process::{Child, Command};
 use tokio::sync::Mutex;
 
+use crate::icy::IcyMetadata;
+
 const USER_DATA_MEDIA_TITLE: u64 = 20_000_001;
 
 #[derive(Debug, Clone)]
@@ -13,6 +15,7 @@ pub struct PlayerState {
     pub volume: i64,
     pub muted: bool,
     pub current_track: String,
+    pub icy_metadata: Option<IcyMetadata>,
 }
 
 pub struct MpvPlayer {
@@ -46,6 +49,7 @@ impl MpvPlayer {
             volume: 80,
             muted: false,
             current_track: String::new(),
+            icy_metadata: None,
         }));
 
         let player = Self {

@@ -88,9 +88,25 @@ fn draw_header(frame: &mut ratatui::Frame, app: &App, area: Rect) {
     frame.render_widget(status, columns[0]);
 
     let track_display = if state.current_track.is_empty() {
-        " ".repeat(track_width as usize)
+        let mut parts = Vec::new();
+        if let Some(ref icy) = state.icy_metadata {
+            if let Some(ref genre) = icy.genre {
+                parts.push(genre.clone());
+            }
+        }
+        if parts.is_empty() {
+            " ".repeat(track_width as usize)
+        } else {
+            parts.join(" • ")
+        }
     } else {
-        state.current_track
+        let mut parts = vec![state.current_track.clone()];
+        if let Some(ref icy) = state.icy_metadata {
+            if let Some(ref genre) = icy.genre {
+                parts.push(genre.clone());
+            }
+        }
+        parts.join(" • ")
     };
     let track = Paragraph::new(track_display)
         .style(track_style)

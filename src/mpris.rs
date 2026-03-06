@@ -5,6 +5,8 @@ use tokio::sync::Mutex;
 use zbus::fdo::{Properties, Result};
 use zbus::{interface, Connection};
 
+use crate::icy::IcyMetadata;
+
 type VoidCallback = Arc<Mutex<Option<Box<dyn Fn() + Send + Sync>>>>;
 type StringCallback = Arc<Mutex<Option<Box<dyn Fn(String) + Send + Sync>>>>;
 type FloatCallback = Arc<Mutex<Option<Box<dyn Fn(f64) + Send + Sync>>>>;
@@ -17,6 +19,7 @@ pub struct MprisState {
     pub url: String,
     pub volume: f64,
     pub muted: bool,
+    pub icy_metadata: Option<IcyMetadata>,
 }
 
 impl Default for MprisState {
@@ -28,6 +31,7 @@ impl Default for MprisState {
             url: String::new(),
             volume: 80.0,
             muted: false,
+            icy_metadata: None,
         }
     }
 }
@@ -179,6 +183,12 @@ impl MediaPlayer2Player {
         }
 
         metadata.insert("mpris:length", zbus::zvariant::Value::new(0i64));
+
+        if let Some(ref icy) = state.icy_metadata {
+            if let Some(ref genre) = icy.genre {
+                metadata.insert("xesam:genre", zbus::zvariant::Value::new(genre.clone()));
+            }
+        }
 
         metadata
     }
@@ -422,6 +432,12 @@ impl MprisServer {
                 }
 
                 metadata.insert("mpris:length", zbus::zvariant::Value::new(0i64));
+
+                if let Some(ref icy) = state.icy_metadata {
+                    if let Some(ref genre) = icy.genre {
+                        metadata.insert("xesam:genre", zbus::zvariant::Value::new(genre.clone()));
+                    }
+                }
 
                 let playback_status = if state.playing {
                     "Playing".to_string()

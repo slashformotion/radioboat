@@ -1,6 +1,7 @@
 use std::time::{Duration, Instant};
 
 use crate::config::{fetch_remote_stations, merge_stations, Import, Station};
+use crate::icy;
 use crate::player::{MpvPlayer, PlayerState};
 use crate::tui::ui;
 
@@ -327,6 +328,10 @@ impl App {
         let station = &self.stations[self.cursor];
         self.player.play(&station.url).await?;
         self.playing_index = Some(self.cursor);
+
+        let icy_metadata = icy::fetch_icy_metadata(&station.url).await;
+        self.state.lock().await.icy_metadata = icy_metadata.clone();
+
         #[cfg(target_os = "linux")]
         {
             if let Some(ref mpris) = self.mpris_state {
@@ -335,6 +340,7 @@ impl App {
                 state.url = station.url.clone();
                 state.station_name = station.name.clone();
                 state.track_title.clear();
+                state.icy_metadata = icy_metadata;
             }
         }
         Ok(())
@@ -361,8 +367,12 @@ impl App {
         if let Some(ref mpris) = self.mpris_state {
             let player_state = self.state.lock().await;
             let mut mpris_state = mpris.lock().await;
-            if mpris_state.track_title != player_state.current_track {
+            let track_changed = mpris_state.track_title != player_state.current_track;
+            let icy_changed = mpris_state.icy_metadata != player_state.icy_metadata;
+
+            if track_changed || icy_changed {
                 mpris_state.track_title = player_state.current_track.clone();
+                mpris_state.icy_metadata = player_state.icy_metadata.clone();
                 drop(mpris_state);
                 if let Some(ref server) = self.mpris_server {
                     server.lock().await.emit_properties_changed().await;

@@ -1,4 +1,5 @@
 mod config;
+mod icy;
 mod player;
 mod tui;
 
