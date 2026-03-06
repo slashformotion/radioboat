@@ -2,12 +2,18 @@ mod config;
 mod player;
 mod tui;
 
+use std::io::stdout;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use config::{load_config, Station};
+use crossterm::{
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
 use player::MpvPlayer;
+use ratatui::{backend::CrosstermBackend, Terminal};
 use tui::app::App;
 use tui::event::{Event, EventHandler};
 
@@ -20,8 +26,17 @@ struct Args {
     #[arg(short, long, default_value = DEFAULT_CONFIG_PATH)]
     config: String,
 
+    #[arg(long, default_value = "full")]
+    ui_size: UiSize,
+
     #[command(subcommand)]
     command: Option<Commands>,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum UiSize {
+    Full,
+    Small,
 }
 
 #[derive(Debug, Subcommand)]
@@ -45,17 +60,17 @@ fn get_editor() -> String {
 
 fn open_in_editor(path: &str) -> anyhow::Result<()> {
     let expanded_path = expand_tilde(path);
-    
+
     let editor = get_editor();
-    
+
     let status = std::process::Command::new(&editor)
         .arg(&expanded_path)
         .status()?;
-    
+
     if !status.success() {
         anyhow::bail!("Editor exited with non-zero status");
     }
-    
+
     Ok(())
 }
 
@@ -95,14 +110,13 @@ async fn main() -> anyhow::Result<()> {
 
     let mut app = App::new(stations, player);
 
-    let mut terminal = ratatui::init();
-    terminal.clear()?;
+    let mut terminal = setup_terminal(args.ui_size)?;
 
     let event_handler = EventHandler::new(Duration::from_millis(100));
 
-    let res = run_app(&mut terminal, &mut app, event_handler).await;
+    let res = run_app(&mut terminal, &mut app, event_handler, args.ui_size).await;
 
-    ratatui::restore();
+    restore_terminal(args.ui_size)?;
 
     if let Err(e) = res {
         eprintln!("Error: {e}");
@@ -113,13 +127,42 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
+fn setup_terminal(ui_size: UiSize) -> anyhow::Result<Terminal<CrosstermBackend<std::io::Stdout>>> {
+    enable_raw_mode()?;
+    let mut stdout = stdout();
+    if matches!(ui_size, UiSize::Full) {
+        execute!(stdout, EnterAlternateScreen)?;
+    }
+    let backend = CrosstermBackend::new(stdout);
+    let terminal = Terminal::new(backend)?;
+    Ok(terminal)
+}
+
+fn restore_terminal(ui_size: UiSize) -> anyhow::Result<()> {
+    if matches!(ui_size, UiSize::Full) {
+        execute!(stdout(), LeaveAlternateScreen)?;
+    }
+    disable_raw_mode()?;
+    Ok(())
+}
+
 async fn run_app(
-    terminal: &mut ratatui::DefaultTerminal,
+    terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
     app: &mut App,
     mut event_handler: EventHandler,
+    ui_size: UiSize,
 ) -> anyhow::Result<()> {
     loop {
-        terminal.draw(|f| app.draw(f))?;
+        terminal.draw(|f| {
+            let area = if matches!(ui_size, UiSize::Small) {
+                let size = f.area();
+                let height = (size.height / 2).min(20).max(10);
+                ratatui::layout::Rect::new(size.x, size.y, size.width, height)
+            } else {
+                f.area()
+            };
+            app.draw_in(f, area);
+        })?;
 
         match event_handler.next().await {
             Event::Key(key) => {

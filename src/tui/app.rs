@@ -144,8 +144,8 @@ impl App {
         (self.size.height as usize).saturating_sub(6).max(1)
     }
 
-    pub fn draw(&self, frame: &mut ratatui::Frame) {
-        ui::draw(frame, self);
+    pub fn draw_in(&self, frame: &mut ratatui::Frame, area: ratatui::layout::Rect) {
+        ui::draw(frame, self, area);
     }
 
     pub fn stations(&self) -> &[Station] {

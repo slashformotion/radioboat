@@ -7,9 +7,7 @@ use ratatui::{
 
 use super::app::App;
 
-pub fn draw(frame: &mut ratatui::Frame, app: &App) {
-    let area = frame.area();
-    
+pub fn draw(frame: &mut ratatui::Frame, app: &App, area: Rect) {
     let msg_count = app.messages().len();
     let msg_height = if msg_count == 0 { 0 } else { msg_count as u16 + 2 };
 
@@ -17,6 +15,7 @@ pub fn draw(frame: &mut ratatui::Frame, app: &App) {
         Constraint::Length(3),
         Constraint::Min(1),
         Constraint::Length(msg_height),
+        Constraint::Length(1),
         Constraint::Length(1),
     ])
     .split(area);
@@ -27,9 +26,10 @@ pub fn draw(frame: &mut ratatui::Frame, app: &App) {
         draw_messages(frame, app, chunks[2]);
     }
     draw_help_bar(frame, chunks[3]);
+    draw_bottom_line(frame, chunks[4]);
 
     if app.show_help() {
-        draw_help_popup(frame);
+        draw_help_popup(frame, area);
     }
 }
 
@@ -62,7 +62,7 @@ fn draw_header(frame: &mut ratatui::Frame, app: &App, area: Rect) {
         .bg(Color::Rgb(165, 80, 223));
 
     let header_area = Rect::new(area.x + 1, area.y + 1, area.width.saturating_sub(2), 1);
-    
+
     let status_width = station_name.len() as u16;
     let volume_width = volume_text.len() as u16;
     let track_width = header_area.width.saturating_sub(status_width + volume_width);
@@ -225,8 +225,18 @@ fn draw_help_bar(frame: &mut ratatui::Frame, area: Rect) {
     frame.render_widget(paragraph, area);
 }
 
-fn draw_help_popup(frame: &mut ratatui::Frame) {
-    let area = frame.area();
+fn draw_bottom_line(frame: &mut ratatui::Frame, area: Rect) {
+    let line = Line::styled(
+        " radioboat ",
+        Style::default()
+            .fg(Color::Rgb(36, 36, 36))
+            .bg(Color::Rgb(255, 95, 135)),
+    );
+    let paragraph = Paragraph::new(line).alignment(ratatui::layout::Alignment::Left);
+    frame.render_widget(paragraph, area);
+}
+
+fn draw_help_popup(frame: &mut ratatui::Frame, area: Rect) {
     let popup_width = 65.min(area.width);
     let popup_height = 18.min(area.height);
     let popup_area = Rect::new(
