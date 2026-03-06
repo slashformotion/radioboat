@@ -1,0 +1,39 @@
+# Radioboat Configuration
+# This is the main configuration file for radioboat
+
+# Initial volume (0-110, default: 80)
+volume = 80
+
+# Start muted (default: false)
+muted = false
+
+# Remote station list imports (optional)
+# Can be HTTP/HTTPS URLs or local file paths
+[[imports]]
+name = "my small list"
+url = "./remote.toml"
+
+# [[imports]]
+# name = "Online Stations"
+# url = "https://example.com/stations.toml"
+
+# Local station list
+[[stations]]
+name = "Classic Vinyl HD"
+url = "https://icecast.walmradio.com:8443/classic"
+
+[[stations]]
+name = "Dance Wave!"
+url = "https://dancewave.online/dance.mp3"
+
+[[stations]]
+name = "Adroit Jazz Underground"
+url = "https://icecast.walmradio.com:8443/jazz"
+
+[[stations]]
+name = "0N Classic Rock"
+url = "https://0n-classicrock.radionetz.de/0n-classicrock.mp3"
+
+[[stations]]
+name = "Intense Radio (FLAC)"
+url = "http://secure.live-streams.nl/flac.ogg"

@@ -14,62 +14,108 @@
 
 **Radioboat is a terminal web radio client, built with simplicity in mind**
 
-![](https://raw.githubusercontent.com/slashformotion/radioboat/master/.github/assets/screencast.gif)
+## Features
 
-## **Features**
-
-- Play radios.
-- Save the current track name to a text file.
+- Play web radio stations via MPV
+- TOML-based configuration
+- Remote station list imports (HTTP/HTTPS or local files)
+- Full-screen or compact UI mode
+- Async, non-blocking interface
 
 ## Installation
 
-### Arch linux based distro
+### From source (Nix)
 
-AUR link: https://aur.archlinux.org/packages/radioboat
-
-### NixOs
-
-NixOs package: [here](https://search.nixos.org/packages?channel=unstable&show=radioboat&from=0&size=50&sort=relevance&type=packages&query=radioboat)
-### Other cases
-You need a functional [go setup](https://go.dev/doc/install).
-
-```
-go install github.com/slashformotion/radioboat@latest
-```
-## How to Use ? 
-
-
-- Copy the sample [stations.csv](https://github.com/slashformotion/radioboat/blob/master/stations.csv) to ~/.config/radioboat/urls.csv.
-- Add the audio stream of your choice and give them a name
-- Launch the program:
 ```bash
-radioboat
+nix develop --command cargo install --path .
 ```
 
-Then, follow the intructions at the bottom of the screen.
+### From source (Cargo)
 
-> please head to the [wiki](https://github.com/slashformotion/radioboat/wiki) for more informations 
+```bash
+cargo install --path .
+```
+
+Requirements: [Rust](https://rustup.rs/) 1.70+, [mpv](https://mpv.io/)
+
+## Usage
+
+```bash
+# Run with default config (~/.config/radioboat/radioboat.toml)
+radioboat
+
+# Use custom config
+radioboat --config ~/my-config.toml
+
+# Small window mode
+radioboat --ui-size small
+
+# Edit config in $EDITOR
+radioboat config-edit
+```
+
+## Configuration
+
+Config file: `~/.config/radioboat/radioboat.toml`
+
+```toml
+volume = 80
+muted = false
+
+# Optional: import remote station lists
+[[imports]]
+name = "My Remote Stations"
+url = "https://example.com/stations.toml"
+
+[[imports]]
+name = "Local Backup"
+url = "~/.config/radioboat/extra.toml"
+
+[[stations]]
+name = "Jazz FM"
+url = "https://stream.example.com/jazz"
+
+[[stations]]
+name = "Deep House"
+url = "http://channels.dinamo.fm/deep-mp3"
+```
+
+Remote station lists contain only `[[stations]]` entries. See [radioboat.toml](radioboat.toml) and [remote.toml](remote.toml) for examples.
+
+## Keybindings
+
+| Key | Action |
+|-----|--------|
+| `↑/k` | Move up |
+| `↓/j` | Move down |
+| `←/h` | Page left |
+| `→/l` | Page right |
+| `Enter` | Play station |
+| `m` | Toggle mute |
+| `*`/`+` | Volume up |
+| `-`/`/` | Volume down |
+| `r` | Refresh remote lists |
+| `?` | Show help |
+| `q/Esc` | Quit |
+
+> Stations show their source in brackets: `[local]` or `[import name]` when imports are configured
+
+## Documentation
+
+- [docs/README.md](docs/README.md) - Overview
+- [docs/config.md](docs/config.md) - Configuration details
+- [docs/architecture.md](docs/architecture.md) - Technical architecture
 
 ## Dependencies
 
-- [libmpv](https://mpv.io): please head to [pkgs.org](https://pkgs.org/search/?q=libmpv) to see what package to install.
-- Various golang libraries: see [go.mod](https://github.com/slashformotion/radioboat/blob/master/go.mod)
+- [mpv](https://mpv.io/) - Audio playback
+- [ratatui](https://github.com/ratatui-org/ratatui) - Terminal UI
+- [tokio](https://tokio.rs/) - Async runtime
 
+## Contributing
 
-### Contribution Guidelines
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-The contribution guidelines are as per the guide [HERE](https://github.com/slashformotion/radioboat/blob/master/CONTRIBUTING.md).
+## License
 
-## Licence
-
-Copyright 2023 slashformotion
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Apache 2.0 - See [LICENCE](LICENCE)
