@@ -23,14 +23,6 @@ pub struct Message {
 }
 
 impl Message {
-    fn new(content: String) -> Self {
-        Self {
-            content,
-            is_error: false,
-            expires: Instant::now() + Duration::from_secs(5),
-        }
-    }
-
     fn error(err: String) -> Self {
         Self {
             content: err,
