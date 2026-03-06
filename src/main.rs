@@ -298,7 +298,7 @@ async fn run_app(
                 }
             }
             Event::Tick => {
-                app.tick();
+                app.tick().await;
             }
             Event::Resize(size) => {
                 app.resize(size);

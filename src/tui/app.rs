@@ -95,8 +95,10 @@ impl App {
         self.size = size;
     }
 
-    pub fn tick(&mut self) {
+    pub async fn tick(&mut self) {
         self.messages.retain(|m| Instant::now() < m.expires);
+        #[cfg(target_os = "linux")]
+        self.sync_mpris_track().await;
     }
 
     pub async fn handle_key(&mut self, key: crossterm::event::KeyEvent) -> anyhow::Result<bool> {
@@ -342,6 +344,17 @@ impl App {
         if let Some(ref mpris) = self.mpris_state {
             let player_state = self.state.lock().await;
             mpris.lock().await.muted = player_state.muted;
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    async fn sync_mpris_track(&self) {
+        if let Some(ref mpris) = self.mpris_state {
+            let player_state = self.state.lock().await;
+            let mut mpris_state = mpris.lock().await;
+            if mpris_state.track_title != player_state.current_track {
+                mpris_state.track_title = player_state.current_track.clone();
+            }
         }
     }
 }
