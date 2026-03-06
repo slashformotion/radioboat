@@ -8,6 +8,12 @@ pub struct Station {
     pub is_remote: bool,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct Import {
+    pub name: String,
+    pub url: String,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct Config {
     #[serde(default)]
@@ -15,7 +21,7 @@ pub struct Config {
     #[serde(default)]
     pub muted: bool,
     #[serde(default)]
-    pub imports: Vec<String>,
+    pub imports: Vec<Import>,
     pub stations: Vec<Station>,
 }
 
@@ -45,12 +51,12 @@ pub fn load_config(path: &str) -> anyhow::Result<Config> {
     Ok(config)
 }
 
-pub async fn fetch_remote_stations(urls: &[String]) -> (Vec<Station>, Vec<String>) {
+pub async fn fetch_remote_stations(imports: &[Import]) -> (Vec<Station>, Vec<String>) {
     let mut all_stations: Vec<Station> = Vec::new();
     let mut errors: Vec<String> = Vec::new();
 
-    for url in urls {
-        match fetch_single_source(url).await {
+    for import in imports {
+        match fetch_single_source(&import.url).await {
             Ok(mut stations) => {
                 for station in &mut stations {
                     station.is_remote = true;
@@ -58,7 +64,7 @@ pub async fn fetch_remote_stations(urls: &[String]) -> (Vec<Station>, Vec<String
                 all_stations.extend(stations);
             }
             Err(e) => {
-                errors.push(format!("Failed to import {}: {}", url, e));
+                errors.push(format!("Failed to import '{}': {}", import.name, e));
             }
         }
     }

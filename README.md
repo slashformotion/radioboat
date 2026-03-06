@@ -63,10 +63,13 @@ volume = 80
 muted = false
 
 # Optional: import remote station lists
-imports = [
-    "https://example.com/stations.toml",
-    "~/.config/radioboat/extra.toml"
-]
+[[imports]]
+name = "My Remote Stations"
+url = "https://example.com/stations.toml"
+
+[[imports]]
+name = "Local Backup"
+url = "~/.config/radioboat/extra.toml"
 
 [[stations]]
 name = "Jazz FM"

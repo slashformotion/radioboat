@@ -9,10 +9,13 @@ muted = false
 
 # Remote station list imports (optional)
 # Can be HTTP/HTTPS URLs or local file paths
-# imports = [
-#     "https://example.com/radio-stations.toml",
-#     "~/.config/radioboat/extra.toml"
-# ]
+[[imports]]
+name = "Example Remote Stations"
+url = "./remote.toml"
+
+# [[imports]]
+# name = "Online Stations"
+# url = "https://example.com/stations.toml"
 
 # Local station list
 [[stations]]

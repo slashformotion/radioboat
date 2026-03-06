@@ -1,13 +1,13 @@
 use std::time::{Duration, Instant};
 
-use crate::config::{fetch_remote_stations, merge_stations, Station};
+use crate::config::{fetch_remote_stations, merge_stations, Import, Station};
 use crate::player::{MpvPlayer, PlayerState};
 use crate::tui::ui;
 
 pub struct App {
     local_stations: Vec<Station>,
     stations: Vec<Station>,
-    imports: Vec<String>,
+    imports: Vec<Import>,
     cursor: usize,
     playing_index: Option<usize>,
     player: MpvPlayer,
@@ -55,7 +55,7 @@ impl App {
     pub fn new(
         local_stations: Vec<Station>,
         remote_stations: Vec<Station>,
-        imports: Vec<String>,
+        imports: Vec<Import>,
         player: MpvPlayer,
         import_errors: Vec<String>,
     ) -> Self {

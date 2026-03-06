@@ -194,7 +194,9 @@ const DEFAULT_CONFIG_TEMPLATE: &str = r#"volume = 80
 muted = false
 
 # Optional: import remote station lists
-# imports = ["https://example.com/stations.toml"]
+# [[imports]]
+# name = "My Remote Stations"
+# url = "https://example.com/stations.toml"
 
 [[stations]]
 name = "Example Station"

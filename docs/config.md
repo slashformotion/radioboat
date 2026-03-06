@@ -8,10 +8,13 @@ Config location: `~/.config/radioboat/radioboat.toml`
 volume = 80
 muted = false
 
-imports = [
-    "https://example.com/stations.toml",
-    "~/.config/radioboat/extra.toml"
-]
+[[imports]]
+name = "My Remote Stations"
+url = "https://example.com/stations.toml"
+
+[[imports]]
+name = "Local Backup"
+url = "~/.config/radioboat/extra.toml"
 
 [[stations]]
 name = "My Station"
@@ -24,7 +27,7 @@ url = "https://stream.example.com/mp3"
 |-------|------|---------|-------------|
 | `volume` | int | 80 | Initial volume (0-110) |
 | `muted` | bool | false | Start muted |
-| `imports` | [string] | [] | Remote station list URLs/paths |
+| `imports` | [[Import]] | [] | Remote station lists |
 | `stations` | [[Station]] | [] | Local station list |
 
 ## Station Object
@@ -33,6 +36,14 @@ url = "https://stream.example.com/mp3"
 [[stations]]
 name = "Station Name"  # Required
 url = "https://..."    # Required
+```
+
+## Import Object
+
+```toml
+[[imports]]
+name = "List Name"     # Required - shown in error messages
+url = "https://..."    # Required - URL or local path
 ```
 
 ## Remote Station Lists
@@ -51,7 +62,7 @@ url = "https://..."
 - Press `r` to refresh
 - Local stations override remote duplicates
 - Merged alphabetically
-- Errors shown in UI, app continues
+- Errors shown with list name, app continues
 
 ### Sources
 
