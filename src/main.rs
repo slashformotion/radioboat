@@ -38,7 +38,9 @@ fn expand_tilde(path: &str) -> PathBuf {
 }
 
 fn get_editor() -> String {
-    std::env::var("EDITOR").unwrap_or_else(|_| "nano".to_string())
+    std::env::var("RADIOBOAT_EDITOR")
+        .or_else(|_| std::env::var("EDITOR"))
+        .unwrap_or_else(|_| "nano".to_string())
 }
 
 fn open_in_editor(path: &str) -> anyhow::Result<()> {
