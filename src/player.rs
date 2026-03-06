@@ -6,7 +6,7 @@ use tokio::net::UnixStream;
 use tokio::process::{Child, Command};
 use tokio::sync::Mutex;
 
-const USER_DATA_MEDIA_TITLE: u64 = 20000001;
+const USER_DATA_MEDIA_TITLE: u64 = 20_000_001;
 
 #[derive(Debug, Clone)]
 pub struct PlayerState {
@@ -67,34 +67,32 @@ impl MpvPlayer {
         let socket_path_clone = player.socket_path.clone();
         tokio::spawn(async move {
             loop {
-                match UnixStream::connect(&socket_path_clone).await {
-                    Ok(stream) => {
-                        let (reader, writer) = stream.into_split();
-                        let writer = Arc::new(tokio::sync::Mutex::new(writer));
-                        
-                        let cmd = serde_json::json!({
-                            "command": ["observe_property", USER_DATA_MEDIA_TITLE, "media-title"]
-                        });
-                        let cmd_str = serde_json::to_string(&cmd).unwrap() + "\n";
-                        
-                        let mut w = writer.lock().await;
-                        let _ = w.write_all(cmd_str.as_bytes()).await;
-                        let _ = w.flush().await;
-                        drop(w);
-                        
-                        let reader = BufReader::new(reader);
-                        let mut lines = reader.lines();
-                        
-                        while let Ok(Some(line)) = lines.next_line().await {
-                            if let Ok(json) = serde_json::from_str::<serde_json::Value>(&line) {
-                                if let Some(event) = json.get("event").and_then(|e| e.as_str()) {
-                                    if event == "property-change" {
-                                        if let Some(name) = json.get("name").and_then(|n| n.as_str()) {
-                                            if name == "media-title" {
-                                                if let Some(track) = json.get("data").and_then(|d| d.as_str()) {
-                                                    let mut s = state.lock().await;
-                                                    s.current_track = track.to_string();
-                                                }
+                if let Ok(stream) = UnixStream::connect(&socket_path_clone).await {
+                    let (reader, writer) = stream.into_split();
+                    let writer = Arc::new(tokio::sync::Mutex::new(writer));
+                    
+                    let cmd = serde_json::json!({
+                        "command": ["observe_property", USER_DATA_MEDIA_TITLE, "media-title"]
+                    });
+                    let cmd_str = serde_json::to_string(&cmd).unwrap() + "\n";
+                    
+                    let mut w = writer.lock().await;
+                    let _ = w.write_all(cmd_str.as_bytes()).await;
+                    let _ = w.flush().await;
+                    drop(w);
+                    
+                    let reader = BufReader::new(reader);
+                    let mut lines = reader.lines();
+                    
+                    while let Ok(Some(line)) = lines.next_line().await {
+                        if let Ok(json) = serde_json::from_str::<serde_json::Value>(&line) {
+                            if let Some(event) = json.get("event").and_then(|e| e.as_str()) {
+                                if event == "property-change" {
+                                    if let Some(name) = json.get("name").and_then(|n| n.as_str()) {
+                                        if name == "media-title" {
+                                            if let Some(track) = json.get("data").and_then(|d| d.as_str()) {
+                                                let mut s = state.lock().await;
+                                                s.current_track = track.to_string();
                                             }
                                         }
                                     }
@@ -102,10 +100,8 @@ impl MpvPlayer {
                             }
                         }
                     }
-                    Err(_) => {
-                        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-                        continue;
-                    }
+                } else {
+                    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
                 }
             }
         });
@@ -160,7 +156,7 @@ impl MpvPlayer {
         Ok(())
     }
 
-    pub fn state(&self) -> &Arc<Mutex<PlayerState>> {
+    pub const fn state(&self) -> &Arc<Mutex<PlayerState>> {
         &self.state
     }
 

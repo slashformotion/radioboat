@@ -22,8 +22,10 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
       - uses: DeterminateSystems/magic-nix-cache-action@v2
-      - name: Lint
-        run:  nix develop --command golangci-lint run
+      - name: Format check
+        run: nix develop --command cargo fmt -- --check
+      - name: Clippy
+        run: nix develop --command cargo clippy -- -W clippy::pedantic -W clippy::nursery -D warnings
 
   unit-tests:
     name: Unit tests
@@ -36,18 +38,13 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
       - uses: DeterminateSystems/magic-nix-cache-action@v2
-      - name: Run units tests
-        run: nix develop --command go test -json ./... > test.json
-      - name: Annotate tests
-        if: always()
-        uses: guyarb/golang-test-annotations@v0.5.1
-        with:
-          test-results: test.json
+      - name: Run tests
+        run: nix develop --command cargo test
 
   build:
     name: Build Radioboat
     runs-on: ubuntu-latest
-    needs: [unit-tests]
+    needs: [unit-tests, check-style]
     steps:
       - uses: actions/checkout@v4
         with:

@@ -9,7 +9,8 @@ use super::app::App;
 
 pub fn draw(frame: &mut ratatui::Frame, app: &App, area: Rect) {
     let msg_count = app.messages().len();
-    let refresh_msg = if app.is_refreshing() { 1 } else { 0 };
+    let refresh_msg = usize::from(app.is_refreshing());
+    #[allow(clippy::cast_possible_truncation)]
     let msg_height = if msg_count + refresh_msg == 0 { 0 } else { (msg_count + refresh_msg) as u16 + 2 };
 
     let chunks = Layout::vertical([
@@ -37,10 +38,10 @@ fn draw_header(frame: &mut ratatui::Frame, app: &App, area: Rect) {
         tokio::runtime::Handle::current().block_on(async { app.state().lock().await.clone() })
     });
 
-    let station_name = match app.playing_index() {
-        Some(idx) => format!(" {} ", app.stations()[idx].name),
-        None => " Not Playing ".to_string(),
-    };
+    let station_name = app.playing_index().map_or_else(
+        || " Not Playing ".to_string(),
+        |idx| format!(" {} ", app.stations()[idx].name),
+    );
 
     let volume_text = if state.muted {
         format!(" Muted({}) ", state.volume)
@@ -62,7 +63,9 @@ fn draw_header(frame: &mut ratatui::Frame, app: &App, area: Rect) {
 
     let header_area = Rect::new(area.x + 1, area.y + 1, area.width.saturating_sub(2), 1);
 
+    #[allow(clippy::cast_possible_truncation)]
     let status_width = station_name.len() as u16;
+    #[allow(clippy::cast_possible_truncation)]
     let volume_width = volume_text.len() as u16;
     let track_width = header_area.width.saturating_sub(status_width + volume_width);
 
@@ -81,7 +84,7 @@ fn draw_header(frame: &mut ratatui::Frame, app: &App, area: Rect) {
     let track_display = if state.current_track.is_empty() {
         " ".repeat(track_width as usize)
     } else {
-        state.current_track.clone()
+        state.current_track
     };
     let track = Paragraph::new(track_display)
         .style(track_style)
@@ -230,13 +233,13 @@ fn draw_help_bar(frame: &mut ratatui::Frame, area: Rect, has_imports: bool) {
         .flat_map(|(key, action)| {
             vec![
                 Span::styled(
-                    format!(" {} ", key),
+                    format!(" {key} "),
                     Style::default()
                         .fg(Color::Rgb(36, 36, 36))
                         .bg(Color::Rgb(147, 147, 255)),
                 ),
                 Span::styled(
-                    format!("{} ", action),
+                    format!("{action} "),
                     Style::default().fg(Color::DarkGray),
                 ),
             ]

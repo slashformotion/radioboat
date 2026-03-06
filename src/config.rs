@@ -63,7 +63,7 @@ pub async fn fetch_remote_stations(imports: &[Import]) -> (Vec<Station>, Vec<Str
             Ok(mut stations) => {
                 for station in &mut stations {
                     station.is_remote = true;
-                    station.source = import.name.clone();
+                    station.source.clone_from(&import.name);
                 }
                 all_stations.extend(stations);
             }

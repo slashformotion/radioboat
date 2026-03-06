@@ -46,7 +46,7 @@ impl Message {
         &self.content
     }
 
-    pub fn is_error(&self) -> bool {
+    pub const fn is_error(&self) -> bool {
         self.is_error
     }
 }
@@ -78,7 +78,7 @@ impl App {
         }
     }
 
-    pub fn resize(&mut self, size: ratatui::layout::Size) {
+    pub const fn resize(&mut self, size: ratatui::layout::Size) {
         self.size = size;
     }
 
@@ -130,7 +130,7 @@ impl App {
             }
             KeyCode::Char('m') => {
                 if let Err(e) = self.player.toggle_mute().await {
-                    self.messages.push(Message::error(format!("Mute failed: {}", e)));
+                    self.messages.push(Message::error(format!("Mute failed: {e}")));
                 }
             }
             KeyCode::Enter => {
@@ -140,18 +140,18 @@ impl App {
                         self.playing_index = Some(self.cursor);
                     }
                     Err(e) => {
-                        self.messages.push(Message::error(format!("Play failed: {}", e)));
+                        self.messages.push(Message::error(format!("Play failed: {e}")));
                     }
                 }
             }
-            KeyCode::Char('*') | KeyCode::Char('+') => {
+            KeyCode::Char('*' | '+') => {
                 if let Err(e) = self.player.volume_up().await {
-                    self.messages.push(Message::error(format!("Volume up failed: {}", e)));
+                    self.messages.push(Message::error(format!("Volume up failed: {e}")));
                 }
             }
-            KeyCode::Char('/') | KeyCode::Char('-') => {
+            KeyCode::Char('/' | '-') => {
                 if let Err(e) = self.player.volume_down().await {
-                    self.messages.push(Message::error(format!("Volume down failed: {}", e)));
+                    self.messages.push(Message::error(format!("Volume down failed: {e}")));
                 }
             }
             KeyCode::Char('?') => {
@@ -199,15 +199,15 @@ impl App {
         &self.stations
     }
 
-    pub fn cursor(&self) -> usize {
+    pub const fn cursor(&self) -> usize {
         self.cursor
     }
 
-    pub fn playing_index(&self) -> Option<usize> {
+    pub const fn playing_index(&self) -> Option<usize> {
         self.playing_index
     }
 
-    pub fn state(&self) -> &std::sync::Arc<tokio::sync::Mutex<PlayerState>> {
+    pub const fn state(&self) -> &std::sync::Arc<tokio::sync::Mutex<PlayerState>> {
         &self.state
     }
 
@@ -215,15 +215,15 @@ impl App {
         &self.messages
     }
 
-    pub fn show_help(&self) -> bool {
+    pub const fn show_help(&self) -> bool {
         self.show_help
     }
 
-    pub fn has_imports(&self) -> bool {
+    pub const fn has_imports(&self) -> bool {
         !self.imports.is_empty()
     }
 
-    pub fn is_refreshing(&self) -> bool {
+    pub const fn is_refreshing(&self) -> bool {
         self.refreshing
     }
 }

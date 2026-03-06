@@ -166,7 +166,7 @@ async fn run_app(
         terminal.draw(|f| {
             let area = if matches!(ui_size, UiSize::Small) {
                 let size = f.area();
-                let height = (size.height / 2).min(20).max(10);
+                let height = (size.height / 2).clamp(10, 20);
                 ratatui::layout::Rect::new(size.x, size.y, size.width, height)
             } else {
                 f.area()
