@@ -2,19 +2,33 @@ use crossterm::event::{Event as CrosstermEvent, KeyEvent};
 use futures::{FutureExt, StreamExt};
 use std::time::Duration;
 
+#[derive(Debug, Clone)]
+pub enum MprisCommand {
+    Quit,
+    Play(String),
+    Stop,
+    Next,
+    Previous,
+    SetVolume(f64),
+}
+
 pub enum Event {
     Key(KeyEvent),
     Tick,
     Resize(ratatui::layout::Size),
+    #[cfg(target_os = "linux")]
+    Mpris(MprisCommand),
 }
 
 pub struct EventHandler {
     event_rx: tokio::sync::mpsc::Receiver<Event>,
+    event_tx: tokio::sync::mpsc::Sender<Event>,
 }
 
 impl EventHandler {
     pub fn new(tick_rate: Duration) -> Self {
         let (event_tx, event_rx) = tokio::sync::mpsc::channel(100);
+        let tx = event_tx.clone();
 
         tokio::spawn(async move {
             let mut reader = crossterm::event::EventStream::new();
@@ -49,7 +63,14 @@ impl EventHandler {
             }
         });
 
-        Self { event_rx }
+        Self {
+            event_rx,
+            event_tx: tx,
+        }
+    }
+
+    pub fn sender(&self) -> tokio::sync::mpsc::Sender<Event> {
+        self.event_tx.clone()
     }
 
     pub async fn next(&mut self) -> Event {

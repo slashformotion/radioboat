@@ -2,6 +2,9 @@ mod config;
 mod player;
 mod tui;
 
+#[cfg(target_os = "linux")]
+mod mpris;
+
 use std::io::stdout;
 use std::path::PathBuf;
 use std::time::Duration;
@@ -16,6 +19,8 @@ use crossterm::{
 use player::MpvPlayer;
 use ratatui::{backend::CrosstermBackend, Terminal};
 use tui::app::App;
+#[cfg(target_os = "linux")]
+use tui::event::MprisCommand;
 use tui::event::{Event, EventHandler};
 
 const DEFAULT_CONFIG_PATH: &str = "~/.config/radioboat/radioboat.toml";
@@ -128,17 +133,104 @@ async fn main() -> anyhow::Result<()> {
         player.toggle_mute().await?;
     }
 
+    #[cfg(target_os = "linux")]
+    let mpris_state = {
+        use std::sync::Arc;
+        use tokio::sync::Mutex;
+        let state = Arc::new(Mutex::new(mpris::MprisState::default()));
+        state.lock().await.volume = config.volume as f64;
+        state.lock().await.muted = config.muted;
+        state
+    };
+
     let mut app = App::new(
         local_stations,
         remote_stations,
         imports,
         player,
         import_errors,
+        #[cfg(target_os = "linux")]
+        mpris_state.clone(),
     );
 
     let mut terminal = setup_terminal(args.ui_size)?;
 
     let event_handler = EventHandler::new(Duration::from_millis(100));
+
+    #[cfg(target_os = "linux")]
+    {
+        let sender = event_handler.sender();
+        let mut mpris_server = mpris::MprisServer::new();
+        let mpris_state_clone = mpris_server.state();
+
+        {
+            let sender = sender.clone();
+            mpris_server.on_quit(move || {
+                let sender = sender.clone();
+                tokio::spawn(async move {
+                    let _ = sender.send(Event::Mpris(MprisCommand::Quit)).await;
+                });
+            });
+        }
+
+        {
+            let sender = sender.clone();
+            mpris_server.on_play(move |url| {
+                let sender = sender.clone();
+                tokio::spawn(async move {
+                    let _ = sender.send(Event::Mpris(MprisCommand::Play(url))).await;
+                });
+            });
+        }
+
+        {
+            let sender = sender.clone();
+            mpris_server.on_stop(move || {
+                let sender = sender.clone();
+                tokio::spawn(async move {
+                    let _ = sender.send(Event::Mpris(MprisCommand::Stop)).await;
+                });
+            });
+        }
+
+        {
+            let sender = sender.clone();
+            mpris_server.on_next(move || {
+                let sender = sender.clone();
+                tokio::spawn(async move {
+                    let _ = sender.send(Event::Mpris(MprisCommand::Next)).await;
+                });
+            });
+        }
+
+        {
+            let sender = sender.clone();
+            mpris_server.on_previous(move || {
+                let sender = sender.clone();
+                tokio::spawn(async move {
+                    let _ = sender.send(Event::Mpris(MprisCommand::Previous)).await;
+                });
+            });
+        }
+
+        {
+            let sender = sender.clone();
+            mpris_server.on_volume_change(move |vol| {
+                let sender = sender.clone();
+                tokio::spawn(async move {
+                    let _ = sender
+                        .send(Event::Mpris(MprisCommand::SetVolume(vol)))
+                        .await;
+                });
+            });
+        }
+
+        if let Err(e) = mpris_server.start().await {
+            eprintln!("Warning: Failed to start MPRIS server: {e}");
+        }
+
+        app.set_mpris_state(mpris_state_clone);
+    }
 
     let res = run_app(&mut terminal, &mut app, event_handler, args.ui_size).await;
 
@@ -207,6 +299,28 @@ async fn run_app(
             Event::Resize(size) => {
                 app.resize(size);
             }
+            #[cfg(target_os = "linux")]
+            Event::Mpris(cmd) => match cmd {
+                MprisCommand::Quit => {
+                    app.quit().await?;
+                    return Ok(());
+                }
+                MprisCommand::Play(url) => {
+                    app.play_url(&url).await?;
+                }
+                MprisCommand::Stop => {
+                    app.stop().await?;
+                }
+                MprisCommand::Next => {
+                    app.next_station().await?;
+                }
+                MprisCommand::Previous => {
+                    app.previous_station().await?;
+                }
+                MprisCommand::SetVolume(vol) => {
+                    app.set_volume(vol as i64).await?;
+                }
+            },
         }
     }
 }

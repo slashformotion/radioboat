@@ -4,6 +4,9 @@ use crate::config::{fetch_remote_stations, merge_stations, Import, Station};
 use crate::player::{MpvPlayer, PlayerState};
 use crate::tui::ui;
 
+#[cfg(target_os = "linux")]
+use crate::mpris::MprisState;
+
 pub struct App {
     local_stations: Vec<Station>,
     stations: Vec<Station>,
@@ -16,6 +19,8 @@ pub struct App {
     show_help: bool,
     size: ratatui::layout::Size,
     refreshing: bool,
+    #[cfg(target_os = "linux")]
+    mpris_state: Option<std::sync::Arc<tokio::sync::Mutex<MprisState>>>,
 }
 
 #[derive(Debug)]
@@ -58,6 +63,7 @@ impl App {
         imports: Vec<Import>,
         player: MpvPlayer,
         import_errors: Vec<String>,
+        #[cfg(target_os = "linux")] mpris_state: std::sync::Arc<tokio::sync::Mutex<MprisState>>,
     ) -> Self {
         let state = player.state().clone();
         let stations = merge_stations(local_stations.clone(), remote_stations);
@@ -75,7 +81,14 @@ impl App {
             show_help: false,
             size: ratatui::layout::Size::default(),
             refreshing: false,
+            #[cfg(target_os = "linux")]
+            mpris_state: Some(mpris_state),
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    pub fn set_mpris_state(&mut self, state: std::sync::Arc<tokio::sync::Mutex<MprisState>>) {
+        self.mpris_state = Some(state);
     }
 
     pub const fn resize(&mut self, size: ratatui::layout::Size) {
@@ -133,30 +146,27 @@ impl App {
                     self.messages
                         .push(Message::error(format!("Mute failed: {e}")));
                 }
+                #[cfg(target_os = "linux")]
+                self.sync_mpris_mute().await;
             }
             KeyCode::Enter => {
-                let station = &self.stations[self.cursor];
-                match self.player.play(&station.url).await {
-                    Ok(()) => {
-                        self.playing_index = Some(self.cursor);
-                    }
-                    Err(e) => {
-                        self.messages
-                            .push(Message::error(format!("Play failed: {e}")));
-                    }
-                }
+                self.play_current_station().await?;
             }
             KeyCode::Char('*' | '+') => {
                 if let Err(e) = self.player.volume_up().await {
                     self.messages
                         .push(Message::error(format!("Volume up failed: {e}")));
                 }
+                #[cfg(target_os = "linux")]
+                self.sync_mpris_volume().await;
             }
             KeyCode::Char('/' | '-') => {
                 if let Err(e) = self.player.volume_down().await {
                     self.messages
                         .push(Message::error(format!("Volume down failed: {e}")));
                 }
+                #[cfg(target_os = "linux")]
+                self.sync_mpris_volume().await;
             }
             KeyCode::Char('?') => {
                 self.show_help = true;
@@ -230,5 +240,108 @@ impl App {
 
     pub const fn is_refreshing(&self) -> bool {
         self.refreshing
+    }
+
+    pub async fn quit(&self) -> anyhow::Result<()> {
+        self.player.close().await.ok();
+        Ok(())
+    }
+
+    pub async fn play_url(&mut self, url: &str) -> anyhow::Result<()> {
+        if let Some(idx) = self.stations.iter().position(|s| s.url == url) {
+            self.cursor = idx;
+            self.play_current_station().await?;
+        } else {
+            self.player.play(url).await?;
+            self.playing_index = None;
+            #[cfg(target_os = "linux")]
+            {
+                if let Some(ref mpris) = self.mpris_state {
+                    let mut state = mpris.lock().await;
+                    state.playing = true;
+                    state.url = url.to_string();
+                    state.station_name.clear();
+                    state.track_title.clear();
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub async fn stop(&mut self) -> anyhow::Result<()> {
+        self.player.close().await?;
+        self.playing_index = None;
+        #[cfg(target_os = "linux")]
+        {
+            if let Some(ref mpris) = self.mpris_state {
+                mpris.lock().await.playing = false;
+            }
+        }
+        Ok(())
+    }
+
+    pub async fn next_station(&mut self) -> anyhow::Result<()> {
+        if self.stations.is_empty() {
+            return Ok(());
+        }
+        self.cursor = if self.cursor >= self.stations.len() - 1 {
+            0
+        } else {
+            self.cursor + 1
+        };
+        self.play_current_station().await
+    }
+
+    pub async fn previous_station(&mut self) -> anyhow::Result<()> {
+        if self.stations.is_empty() {
+            return Ok(());
+        }
+        self.cursor = if self.cursor == 0 {
+            self.stations.len() - 1
+        } else {
+            self.cursor - 1
+        };
+        self.play_current_station().await
+    }
+
+    pub async fn set_volume(&mut self, volume: i64) -> anyhow::Result<()> {
+        let volume = volume.clamp(0, 110);
+        self.player.set_volume(volume).await?;
+        #[cfg(target_os = "linux")]
+        self.sync_mpris_volume().await;
+        Ok(())
+    }
+
+    async fn play_current_station(&mut self) -> anyhow::Result<()> {
+        let station = &self.stations[self.cursor];
+        self.player.play(&station.url).await?;
+        self.playing_index = Some(self.cursor);
+        #[cfg(target_os = "linux")]
+        {
+            if let Some(ref mpris) = self.mpris_state {
+                let mut state = mpris.lock().await;
+                state.playing = true;
+                state.url = station.url.clone();
+                state.station_name = station.name.clone();
+                state.track_title.clear();
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(target_os = "linux")]
+    async fn sync_mpris_volume(&self) {
+        if let Some(ref mpris) = self.mpris_state {
+            let player_state = self.state.lock().await;
+            mpris.lock().await.volume = player_state.volume as f64;
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    async fn sync_mpris_mute(&self) {
+        if let Some(ref mpris) = self.mpris_state {
+            let player_state = self.state.lock().await;
+            mpris.lock().await.muted = player_state.muted;
+        }
     }
 }
