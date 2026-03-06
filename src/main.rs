@@ -130,7 +130,9 @@ async fn main() -> anyhow::Result<()> {
 fn setup_terminal(ui_size: UiSize) -> anyhow::Result<Terminal<CrosstermBackend<std::io::Stdout>>> {
     enable_raw_mode()?;
     let mut stdout = stdout();
-    if matches!(ui_size, UiSize::Full) {
+    if matches!(ui_size, UiSize::Small) {
+        execute!(stdout, crossterm::terminal::Clear(crossterm::terminal::ClearType::All))?;
+    } else {
         execute!(stdout, EnterAlternateScreen)?;
     }
     let backend = CrosstermBackend::new(stdout);
