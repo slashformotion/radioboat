@@ -9,8 +9,7 @@
   nix-gitignore,
   radioboat,
 }:
-
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage {
   pname = "radioboat";
   version = "0.4.0";
 
@@ -42,7 +41,7 @@ rustPlatform.buildRustPackage rec {
   };
 
   meta = with lib; {
-    description = "Terminal web radio client";
+    description = "Radioboat is a terminal web radio client, built with simplicity in mind.";
     mainProgram = "radioboat";
     homepage = "https://github.com/slashformotion/radioboat";
     license = licenses.asl20;

@@ -23,6 +23,7 @@ const DEFAULT_CONFIG_PATH: &str = "~/.config/radioboat/radioboat.toml";
 #[derive(Parser, Debug)]
 #[command(name = "radioboat")]
 #[command(about = "A terminal web radio client", long_about = None)]
+#[command(version)]
 struct Args {
     #[arg(short, long, default_value = DEFAULT_CONFIG_PATH)]
     config: String,
