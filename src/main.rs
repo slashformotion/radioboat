@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use config::{load_config, Station};
+use config::{fetch_remote_stations, load_config};
 use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
@@ -95,12 +95,20 @@ async fn main() -> anyhow::Result<()> {
 
     let config = load_config(&args.config)?;
 
-    if config.stations.is_empty() {
+    let local_stations = config.stations;
+    let imports = config.imports;
+
+    if local_stations.is_empty() && imports.is_empty() {
         eprintln!("No stations found in {}", args.config);
         std::process::exit(1);
     }
 
-    let stations: Vec<Station> = config.stations;
+    let (remote_stations, import_errors) = fetch_remote_stations(&imports).await;
+
+    if local_stations.is_empty() && remote_stations.is_empty() {
+        eprintln!("No stations found (local or remote)");
+        std::process::exit(1);
+    }
 
     let player = MpvPlayer::new().await?;
     player.set_volume(config.volume).await?;
@@ -108,7 +116,7 @@ async fn main() -> anyhow::Result<()> {
         player.toggle_mute().await?;
     }
 
-    let mut app = App::new(stations, player);
+    let mut app = App::new(local_stations, remote_stations, imports, player, import_errors);
 
     let mut terminal = setup_terminal(args.ui_size)?;
 
@@ -184,6 +192,9 @@ async fn run_app(
 
 const DEFAULT_CONFIG_TEMPLATE: &str = r#"volume = 80
 muted = false
+
+# Optional: import remote station lists
+# imports = ["https://example.com/stations.toml"]
 
 [[stations]]
 name = "Example Station"

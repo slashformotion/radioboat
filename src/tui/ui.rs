@@ -9,7 +9,8 @@ use super::app::App;
 
 pub fn draw(frame: &mut ratatui::Frame, app: &App, area: Rect) {
     let msg_count = app.messages().len();
-    let msg_height = if msg_count == 0 { 0 } else { msg_count as u16 + 2 };
+    let refresh_msg = if app.is_refreshing() { 1 } else { 0 };
+    let msg_height = if msg_count + refresh_msg == 0 { 0 } else { (msg_count + refresh_msg) as u16 + 2 };
 
     let chunks = Layout::vertical([
         Constraint::Length(3),
@@ -21,13 +22,13 @@ pub fn draw(frame: &mut ratatui::Frame, app: &App, area: Rect) {
 
     draw_header(frame, app, chunks[0]);
     draw_stations(frame, app, chunks[1]);
-    if msg_count > 0 {
+    if msg_height > 0 {
         draw_messages(frame, app, chunks[2]);
     }
-    draw_help_bar(frame, chunks[3]);
+    draw_help_bar(frame, chunks[3], app.has_imports());
 
     if app.show_help() {
-        draw_help_popup(frame, area);
+        draw_help_popup(frame, area, app.has_imports());
     }
 }
 
@@ -114,8 +115,10 @@ fn draw_stations(frame: &mut ratatui::Frame, app: &App, area: Rect) {
             let idx = scroll_offset + i;
             let is_selected = idx == cursor;
             let is_playing = playing_index == Some(idx);
+            let is_remote = station.is_remote;
 
             let prefix = if is_selected { "▶ " } else { "  " };
+            let remote_indicator = if is_remote { " ☁" } else { "" };
 
             let (prefix_style, name_style) = if is_playing && is_selected {
                 (
@@ -139,9 +142,12 @@ fn draw_stations(frame: &mut ratatui::Frame, app: &App, area: Rect) {
                 )
             };
 
+            let remote_style = Style::default().fg(Color::Rgb(100, 149, 237));
+
             let line = Line::from(vec![
                 Span::styled(prefix, prefix_style),
                 Span::styled(&station.name, name_style),
+                Span::styled(remote_indicator, remote_style),
             ]);
 
             ListItem::new(line)
@@ -164,25 +170,30 @@ fn draw_stations(frame: &mut ratatui::Frame, app: &App, area: Rect) {
 }
 
 fn draw_messages(frame: &mut ratatui::Frame, app: &App, area: Rect) {
-    let messages: Vec<Line> = app
-        .messages()
-        .iter()
-        .map(|m| {
-            if m.is_error() {
-                Line::styled(
-                    format!(" {} ", m.content()),
-                    Style::default().fg(Color::Rgb(255, 100, 100)).bg(Color::Rgb(60, 40, 40)),
-                )
-            } else {
-                Line::styled(
-                    format!(" {} ", m.content()),
-                    Style::default().fg(Color::Rgb(150, 255, 150)).bg(Color::Rgb(40, 60, 40)),
-                )
-            }
-        })
-        .collect();
+    let mut lines: Vec<Line> = Vec::new();
 
-    let paragraph = Paragraph::new(messages).block(
+    if app.is_refreshing() {
+        lines.push(Line::styled(
+            " Refreshing remote station lists... ",
+            Style::default().fg(Color::Rgb(147, 147, 255)).bg(Color::Rgb(40, 40, 80)),
+        ));
+    }
+
+    for m in app.messages() {
+        if m.is_error() {
+            lines.push(Line::styled(
+                format!(" {} ", m.content()),
+                Style::default().fg(Color::Rgb(255, 100, 100)).bg(Color::Rgb(60, 40, 40)),
+            ));
+        } else {
+            lines.push(Line::styled(
+                format!(" {} ", m.content()),
+                Style::default().fg(Color::Rgb(150, 255, 150)).bg(Color::Rgb(40, 60, 40)),
+            ));
+        }
+    }
+
+    let paragraph = Paragraph::new(lines).block(
         Block::default()
             .borders(Borders::ALL)
             .border_type(BorderType::Rounded)
@@ -191,15 +202,20 @@ fn draw_messages(frame: &mut ratatui::Frame, app: &App, area: Rect) {
     frame.render_widget(paragraph, area);
 }
 
-fn draw_help_bar(frame: &mut ratatui::Frame, area: Rect) {
-    let shortcuts = [
+fn draw_help_bar(frame: &mut ratatui::Frame, area: Rect, has_imports: bool) {
+    let mut shortcuts: Vec<(&str, &str)> = vec![
         ("?", "Help"),
         ("Enter", "Play"),
         ("m", "Mute"),
         ("*/+", "Vol+"),
         ("-/\\", "Vol-"),
-        ("q", "Quit"),
     ];
+
+    if has_imports {
+        shortcuts.push(("r", "Refresh"));
+    }
+
+    shortcuts.push(("q", "Quit"));
 
     let spans: Vec<Span> = shortcuts
         .iter()
@@ -224,9 +240,9 @@ fn draw_help_bar(frame: &mut ratatui::Frame, area: Rect) {
     frame.render_widget(paragraph, area);
 }
 
-fn draw_help_popup(frame: &mut ratatui::Frame, area: Rect) {
+fn draw_help_popup(frame: &mut ratatui::Frame, area: Rect, has_imports: bool) {
     let popup_width = 65.min(area.width);
-    let popup_height = 18.min(area.height);
+    let popup_height = if has_imports { 20 } else { 18 }.min(area.height);
     let popup_area = Rect::new(
         (area.width.saturating_sub(popup_width)) / 2,
         (area.height.saturating_sub(popup_height)) / 2,
@@ -240,7 +256,7 @@ fn draw_help_popup(frame: &mut ratatui::Frame, area: Rect) {
         .fg(Color::Rgb(36, 36, 36))
         .bg(Color::Rgb(147, 147, 255));
 
-    let help_lines = vec![
+    let mut help_lines = vec![
         Line::from(""),
         Line::from(vec![
             Span::styled("  ↑/k  ", key_style),
@@ -266,14 +282,23 @@ fn draw_help_popup(frame: &mut ratatui::Frame, area: Rect) {
             Span::raw("                "),
         ]),
         Line::from(""),
-        Line::from(vec![
-            Span::styled("  q/Esc ", key_style),
-            Span::raw(" Quit           "),
-            Span::styled("   ?   ", key_style),
-            Span::raw(" Toggle help   "),
-        ]),
-        Line::from(""),
     ];
+
+    if has_imports {
+        help_lines.push(Line::from(vec![
+            Span::styled("   r   ", key_style),
+            Span::raw(" Refresh remote stations"),
+        ]));
+        help_lines.push(Line::from(""));
+    }
+
+    help_lines.push(Line::from(vec![
+        Span::styled("  q/Esc ", key_style),
+        Span::raw(" Quit           "),
+        Span::styled("   ?   ", key_style),
+        Span::raw(" Toggle help   "),
+    ]));
+    help_lines.push(Line::from(""));
 
     let paragraph = Paragraph::new(help_lines).block(
         Block::default()
