@@ -6,6 +6,8 @@ pub struct Station {
     pub url: String,
     #[serde(skip)]
     pub is_remote: bool,
+    #[serde(skip)]
+    pub source: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -47,6 +49,7 @@ pub fn load_config(path: &str) -> anyhow::Result<Config> {
     let mut config: Config = toml::from_str(&content)?;
     for station in &mut config.stations {
         station.is_remote = false;
+        station.source = "local".to_string();
     }
     Ok(config)
 }
@@ -60,6 +63,7 @@ pub async fn fetch_remote_stations(imports: &[Import]) -> (Vec<Station>, Vec<Str
             Ok(mut stations) => {
                 for station in &mut stations {
                     station.is_remote = true;
+                    station.source = import.name.clone();
                 }
                 all_stations.extend(stations);
             }

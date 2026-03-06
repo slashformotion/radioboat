@@ -98,7 +98,7 @@ Remote station lists contain only `[[stations]]` entries. See [radioboat.toml](r
 | `?` | Show help |
 | `q/Esc` | Quit |
 
-> Remote stations are marked with ☁ in the station list
+> Stations show their source in brackets: `[local]` or `[import name]` when imports are configured
 
 ## Documentation
 

@@ -98,6 +98,7 @@ fn draw_stations(frame: &mut ratatui::Frame, app: &App, area: Rect) {
     let stations = app.stations();
     let cursor = app.cursor();
     let playing_index = app.playing_index();
+    let has_imports = app.has_imports();
 
     let page_height = area.height.saturating_sub(2) as usize;
     let scroll_offset = if cursor >= page_height {
@@ -115,10 +116,13 @@ fn draw_stations(frame: &mut ratatui::Frame, app: &App, area: Rect) {
             let idx = scroll_offset + i;
             let is_selected = idx == cursor;
             let is_playing = playing_index == Some(idx);
-            let is_remote = station.is_remote;
 
             let prefix = if is_selected { "▶ " } else { "  " };
-            let remote_indicator = if is_remote { " ☁" } else { "" };
+            let source_tag = if has_imports {
+                format!(" [{}]", station.source)
+            } else {
+                String::new()
+            };
 
             let (prefix_style, name_style) = if is_playing && is_selected {
                 (
@@ -142,12 +146,16 @@ fn draw_stations(frame: &mut ratatui::Frame, app: &App, area: Rect) {
                 )
             };
 
-            let remote_style = Style::default().fg(Color::Rgb(100, 149, 237));
+            let source_style = if station.is_remote {
+                Style::default().fg(Color::Rgb(100, 149, 237))
+            } else {
+                Style::default().fg(Color::Rgb(100, 100, 120))
+            };
 
             let line = Line::from(vec![
                 Span::styled(prefix, prefix_style),
                 Span::styled(&station.name, name_style),
-                Span::styled(remote_indicator, remote_style),
+                Span::styled(source_tag, source_style),
             ]);
 
             ListItem::new(line)
