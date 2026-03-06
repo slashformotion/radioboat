@@ -130,7 +130,8 @@ impl App {
             }
             KeyCode::Char('m') => {
                 if let Err(e) = self.player.toggle_mute().await {
-                    self.messages.push(Message::error(format!("Mute failed: {e}")));
+                    self.messages
+                        .push(Message::error(format!("Mute failed: {e}")));
                 }
             }
             KeyCode::Enter => {
@@ -140,18 +141,21 @@ impl App {
                         self.playing_index = Some(self.cursor);
                     }
                     Err(e) => {
-                        self.messages.push(Message::error(format!("Play failed: {e}")));
+                        self.messages
+                            .push(Message::error(format!("Play failed: {e}")));
                     }
                 }
             }
             KeyCode::Char('*' | '+') => {
                 if let Err(e) = self.player.volume_up().await {
-                    self.messages.push(Message::error(format!("Volume up failed: {e}")));
+                    self.messages
+                        .push(Message::error(format!("Volume up failed: {e}")));
                 }
             }
             KeyCode::Char('/' | '-') => {
                 if let Err(e) = self.player.volume_down().await {
-                    self.messages.push(Message::error(format!("Volume down failed: {e}")));
+                    self.messages
+                        .push(Message::error(format!("Volume down failed: {e}")));
                 }
             }
             KeyCode::Char('?') => {
@@ -165,7 +169,8 @@ impl App {
                 self.refreshing = false;
 
                 if errors.is_empty() {
-                    self.messages.push(Message::info("Remote station lists refreshed".to_string()));
+                    self.messages
+                        .push(Message::info("Remote station lists refreshed".to_string()));
                 } else {
                     for err in errors {
                         self.messages.push(Message::error(err));

@@ -11,7 +11,11 @@ pub fn draw(frame: &mut ratatui::Frame, app: &App, area: Rect) {
     let msg_count = app.messages().len();
     let refresh_msg = usize::from(app.is_refreshing());
     #[allow(clippy::cast_possible_truncation)]
-    let msg_height = if msg_count + refresh_msg == 0 { 0 } else { (msg_count + refresh_msg) as u16 + 2 };
+    let msg_height = if msg_count + refresh_msg == 0 {
+        0
+    } else {
+        (msg_count + refresh_msg) as u16 + 2
+    };
 
     let chunks = Layout::vertical([
         Constraint::Length(3),
@@ -67,7 +71,9 @@ fn draw_header(frame: &mut ratatui::Frame, app: &App, area: Rect) {
     let status_width = station_name.len() as u16;
     #[allow(clippy::cast_possible_truncation)]
     let volume_width = volume_text.len() as u16;
-    let track_width = header_area.width.saturating_sub(status_width + volume_width);
+    let track_width = header_area
+        .width
+        .saturating_sub(status_width + volume_width);
 
     let columns = Layout::horizontal([
         Constraint::Length(status_width),
@@ -129,18 +135,28 @@ fn draw_stations(frame: &mut ratatui::Frame, app: &App, area: Rect) {
 
             let (prefix_style, name_style) = if is_playing && is_selected {
                 (
-                    Style::default().fg(Color::Rgb(255, 95, 135)).add_modifier(Modifier::BOLD),
-                    Style::default().fg(Color::Rgb(255, 95, 135)).add_modifier(Modifier::BOLD),
+                    Style::default()
+                        .fg(Color::Rgb(255, 95, 135))
+                        .add_modifier(Modifier::BOLD),
+                    Style::default()
+                        .fg(Color::Rgb(255, 95, 135))
+                        .add_modifier(Modifier::BOLD),
                 )
             } else if is_playing {
                 (
                     Style::default().fg(Color::Rgb(255, 95, 135)),
-                    Style::default().fg(Color::Rgb(255, 95, 135)).add_modifier(Modifier::ITALIC),
+                    Style::default()
+                        .fg(Color::Rgb(255, 95, 135))
+                        .add_modifier(Modifier::ITALIC),
                 )
             } else if is_selected {
                 (
-                    Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
-                    Style::default().fg(Color::White).add_modifier(Modifier::BOLD),
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                    Style::default()
+                        .fg(Color::White)
+                        .add_modifier(Modifier::BOLD),
                 )
             } else {
                 (
@@ -186,7 +202,9 @@ fn draw_messages(frame: &mut ratatui::Frame, app: &App, area: Rect) {
     if app.is_refreshing() {
         lines.push(Line::styled(
             " Refreshing remote station lists... ",
-            Style::default().fg(Color::Rgb(147, 147, 255)).bg(Color::Rgb(40, 40, 80)),
+            Style::default()
+                .fg(Color::Rgb(147, 147, 255))
+                .bg(Color::Rgb(40, 40, 80)),
         ));
     }
 
@@ -194,12 +212,16 @@ fn draw_messages(frame: &mut ratatui::Frame, app: &App, area: Rect) {
         if m.is_error() {
             lines.push(Line::styled(
                 format!(" {} ", m.content()),
-                Style::default().fg(Color::Rgb(255, 100, 100)).bg(Color::Rgb(60, 40, 40)),
+                Style::default()
+                    .fg(Color::Rgb(255, 100, 100))
+                    .bg(Color::Rgb(60, 40, 40)),
             ));
         } else {
             lines.push(Line::styled(
                 format!(" {} ", m.content()),
-                Style::default().fg(Color::Rgb(150, 255, 150)).bg(Color::Rgb(40, 60, 40)),
+                Style::default()
+                    .fg(Color::Rgb(150, 255, 150))
+                    .bg(Color::Rgb(40, 60, 40)),
             ));
         }
     }
@@ -238,10 +260,7 @@ fn draw_help_bar(frame: &mut ratatui::Frame, area: Rect, has_imports: bool) {
                         .fg(Color::Rgb(36, 36, 36))
                         .bg(Color::Rgb(147, 147, 255)),
                 ),
-                Span::styled(
-                    format!("{action} "),
-                    Style::default().fg(Color::DarkGray),
-                ),
+                Span::styled(format!("{action} "), Style::default().fg(Color::DarkGray)),
             ]
         })
         .collect();

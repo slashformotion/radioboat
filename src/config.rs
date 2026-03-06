@@ -99,9 +99,11 @@ async fn fetch_http(url: &str) -> anyhow::Result<String> {
 pub fn merge_stations(local: Vec<Station>, remote: Vec<Station>) -> Vec<Station> {
     let mut merged: Vec<Station> = local;
 
-    let local_urls: std::collections::HashSet<String> = merged.iter().map(|s| s.url.clone()).collect();
+    let local_urls: std::collections::HashSet<String> =
+        merged.iter().map(|s| s.url.clone()).collect();
 
-    let mut remote_by_url: std::collections::HashMap<String, Station> = std::collections::HashMap::new();
+    let mut remote_by_url: std::collections::HashMap<String, Station> =
+        std::collections::HashMap::new();
     for station in remote {
         if !local_urls.contains(&station.url) {
             remote_by_url.insert(station.url.clone(), station);

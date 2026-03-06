@@ -128,7 +128,13 @@ async fn main() -> anyhow::Result<()> {
         player.toggle_mute().await?;
     }
 
-    let mut app = App::new(local_stations, remote_stations, imports, player, import_errors);
+    let mut app = App::new(
+        local_stations,
+        remote_stations,
+        imports,
+        player,
+        import_errors,
+    );
 
     let mut terminal = setup_terminal(args.ui_size)?;
 
@@ -151,7 +157,10 @@ fn setup_terminal(ui_size: UiSize) -> anyhow::Result<Terminal<CrosstermBackend<s
     enable_raw_mode()?;
     let mut stdout = stdout();
     if matches!(ui_size, UiSize::Small) {
-        execute!(stdout, crossterm::terminal::Clear(crossterm::terminal::ClearType::All))?;
+        execute!(
+            stdout,
+            crossterm::terminal::Clear(crossterm::terminal::ClearType::All)
+        )?;
     } else {
         execute!(stdout, EnterAlternateScreen)?;
     }
