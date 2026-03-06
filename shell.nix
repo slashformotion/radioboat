@@ -7,6 +7,7 @@ pkgs.mkShell {
 
   nativeBuildInputs = with pkgs; [
     gnumake
+    just
 
     # go development
     go
