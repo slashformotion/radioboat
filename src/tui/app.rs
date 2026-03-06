@@ -5,7 +5,7 @@ use crate::player::{MpvPlayer, PlayerState};
 use crate::tui::ui;
 
 #[cfg(target_os = "linux")]
-use crate::mpris::MprisState;
+use crate::mpris::{MprisServer, MprisState};
 
 pub struct App {
     local_stations: Vec<Station>,
@@ -21,6 +21,8 @@ pub struct App {
     refreshing: bool,
     #[cfg(target_os = "linux")]
     mpris_state: Option<std::sync::Arc<tokio::sync::Mutex<MprisState>>>,
+    #[cfg(target_os = "linux")]
+    mpris_server: Option<std::sync::Arc<tokio::sync::Mutex<MprisServer>>>,
 }
 
 #[derive(Debug)]
@@ -83,12 +85,19 @@ impl App {
             refreshing: false,
             #[cfg(target_os = "linux")]
             mpris_state: Some(mpris_state),
+            #[cfg(target_os = "linux")]
+            mpris_server: None,
         }
     }
 
     #[cfg(target_os = "linux")]
-    pub fn set_mpris_state(&mut self, state: std::sync::Arc<tokio::sync::Mutex<MprisState>>) {
+    pub fn set_mpris(
+        &mut self,
+        state: std::sync::Arc<tokio::sync::Mutex<MprisState>>,
+        server: std::sync::Arc<tokio::sync::Mutex<MprisServer>>,
+    ) {
         self.mpris_state = Some(state);
+        self.mpris_server = Some(server);
     }
 
     pub const fn resize(&mut self, size: ratatui::layout::Size) {
@@ -354,6 +363,10 @@ impl App {
             let mut mpris_state = mpris.lock().await;
             if mpris_state.track_title != player_state.current_track {
                 mpris_state.track_title = player_state.current_track.clone();
+                drop(mpris_state);
+                if let Some(ref server) = self.mpris_server {
+                    server.lock().await.emit_properties_changed().await;
+                }
             }
         }
     }

@@ -1,7 +1,8 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use zbus::fdo::Result;
+use zbus::fdo::{Properties, Result};
 use zbus::{interface, Connection};
 
 type VoidCallback = Arc<Mutex<Option<Box<dyn Fn() + Send + Sync>>>>;
@@ -384,6 +385,26 @@ impl MprisServer {
 
         self.connection = Some(connection);
         Ok(())
+    }
+
+    pub async fn emit_properties_changed(&self) {
+        if let Some(ref conn) = self.connection {
+            let iface_ref = conn
+                .object_server()
+                .interface::<_, MediaPlayer2Player>("/org/mpris/MediaPlayer2")
+                .await;
+
+            if let Ok(iface_ref) = iface_ref {
+                let emitter = iface_ref.signal_emitter();
+                let _ = Properties::properties_changed(
+                    emitter,
+                    "org.mpris.MediaPlayer2.Player".try_into().unwrap(),
+                    HashMap::new(),
+                    Cow::Borrowed(&["Metadata", "PlaybackStatus"]),
+                )
+                .await;
+            }
+        }
     }
 }
 

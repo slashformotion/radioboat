@@ -229,7 +229,8 @@ async fn main() -> anyhow::Result<()> {
             eprintln!("Warning: Failed to start MPRIS server: {e}");
         }
 
-        app.set_mpris_state(mpris_state_clone);
+        let mpris_server = std::sync::Arc::new(tokio::sync::Mutex::new(mpris_server));
+        app.set_mpris(mpris_state_clone, mpris_server.clone());
         Some(mpris_server)
     };
     #[cfg(not(target_os = "linux"))]
