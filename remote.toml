@@ -1,0 +1,23 @@
+# Remote Station List Example
+# This file can be hosted on a web server or stored locally
+# and imported via the 'imports' field in the main config
+
+[[stations]]
+name = "Chillout Lounge"
+url = "https://stream.example.com/chillout"
+
+[[stations]]
+name = "Electronic Beats"
+url = "https://stream.example.com/electronic"
+
+[[stations]]
+name = "Indie Rock Radio"
+url = "https://stream.example.com/indie"
+
+[[stations]]
+name = "Lo-Fi Hip Hop"
+url = "https://stream.example.com/lofi"
+
+[[stations]]
+name = "Ambient Space"
+url = "https://stream.example.com/ambient"

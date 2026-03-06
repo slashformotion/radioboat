@@ -1,0 +1,28 @@
+# Radioboat Configuration
+# This is the main configuration file for radioboat
+
+# Initial volume (0-110, default: 80)
+volume = 80
+
+# Start muted (default: false)
+muted = false
+
+# Remote station list imports (optional)
+# Can be HTTP/HTTPS URLs or local file paths
+# imports = [
+#     "https://example.com/radio-stations.toml",
+#     "~/.config/radioboat/my-stations.toml"
+# ]
+
+# Local station list
+[[stations]]
+name = "Jazz FM"
+url = "https://walmradio.com:8443/jazz"
+
+[[stations]]
+name = "Deep House"
+url = "http://channels.dinamo.fm/deep-mp3"
+
+[[stations]]
+name = "Classical Violin"
+url = "http://prem2.classicalradio.com/violinworks?b1e8ab696a279ebb68c48cab"
