@@ -395,12 +395,52 @@ impl MprisServer {
                 .await;
 
             if let Ok(iface_ref) = iface_ref {
+                let state = self.state.lock().await;
+                let mut metadata: HashMap<&str, zbus::zvariant::Value<'_>> = HashMap::new();
+
+                let trackid = if state.playing {
+                    "/org/mpris/MediaPlayer2/Track1"
+                } else {
+                    "/org/mpris/MediaPlayer2/NoTrack"
+                };
+                metadata.insert(
+                    "mpris:trackid",
+                    zbus::zvariant::Value::new(trackid.to_owned()),
+                );
+
+                let title = if state.track_title.is_empty() {
+                    state.station_name.clone()
+                } else {
+                    state.track_title.clone()
+                };
+                if !title.is_empty() {
+                    metadata.insert("xesam:title", zbus::zvariant::Value::new(title));
+                }
+
+                if !state.url.is_empty() {
+                    metadata.insert("xesam:url", zbus::zvariant::Value::new(state.url.clone()));
+                }
+
+                metadata.insert("mpris:length", zbus::zvariant::Value::new(0i64));
+
+                let playback_status = if state.playing {
+                    "Playing".to_string()
+                } else {
+                    "Stopped".to_string()
+                };
+
+                let mut changed: HashMap<&str, zbus::zvariant::Value<'_>> = HashMap::new();
+                changed.insert("Metadata", zbus::zvariant::Value::new(metadata));
+                changed.insert("PlaybackStatus", zbus::zvariant::Value::new(playback_status));
+
+                drop(state);
+
                 let emitter = iface_ref.signal_emitter();
                 let _ = Properties::properties_changed(
                     emitter,
                     "org.mpris.MediaPlayer2.Player".try_into().unwrap(),
-                    HashMap::new(),
-                    Cow::Borrowed(&["Metadata", "PlaybackStatus"]),
+                    changed,
+                    Cow::Borrowed(&[]),
                 )
                 .await;
             }
