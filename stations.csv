@@ -1,5 +1,9 @@
 url,"name"
 https://walmradio.com:8443/jazz,jazz
-http://channels.dinamo.fm/deep-mp3,deep
-http://prem2.classicalradio.com/violinworks?b1e8ab696a279ebb68c48cab,violin
-http://prem2.classicalradio.com/violinworks?b1e8ab696a279ebb68c48cab,violin2
+https://icecast.walmradio.com:8443/classic,jazz1
+https://icecast.walmradio.com:8443/classic,jazz2
+https://icecast.walmradio.com:8443/classic,jazz3
+https://icecast.walmradio.com:8443/classic,jazz4
+https://icecast.walmradio.com:8443/classic,jazz5
+https://icecast.walmradio.com:8443/classic,jazz6
+https://icecast.walmradio.com:8443/classic,jazz7
