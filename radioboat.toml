@@ -11,18 +11,26 @@ muted = false
 # Can be HTTP/HTTPS URLs or local file paths
 # imports = [
 #     "https://example.com/radio-stations.toml",
-#     "~/.config/radioboat/my-stations.toml"
+#     "~/.config/radioboat/extra.toml"
 # ]
 
 # Local station list
 [[stations]]
-name = "Jazz FM"
-url = "https://walmradio.com:8443/jazz"
+name = "Classic Vinyl HD"
+url = "https://icecast.walmradio.com:8443/classic"
 
 [[stations]]
-name = "Deep House"
-url = "http://channels.dinamo.fm/deep-mp3"
+name = "Dance Wave!"
+url = "https://dancewave.online/dance.mp3"
 
 [[stations]]
-name = "Classical Violin"
-url = "http://prem2.classicalradio.com/violinworks?b1e8ab696a279ebb68c48cab"
+name = "Adroit Jazz Underground"
+url = "https://icecast.walmradio.com:8443/jazz"
+
+[[stations]]
+name = "0N Classic Rock"
+url = "https://0n-classicrock.radionetz.de/0n-classicrock.mp3"
+
+[[stations]]
+name = "Intense Radio (FLAC)"
+url = "http://secure.live-streams.nl/flac.ogg"

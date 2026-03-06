@@ -3,21 +3,25 @@
 # and imported via the 'imports' field in the main config
 
 [[stations]]
-name = "Chillout Lounge"
-url = "https://stream.example.com/chillout"
+name = "Dance Wave Retro!"
+url = "https://retro.dancewave.online/retrodance.mp3"
 
 [[stations]]
-name = "Electronic Beats"
-url = "https://stream.example.com/electronic"
+name = "0N 70s"
+url = "https://0n-70s.radionetz.de/0n-70s.mp3"
 
 [[stations]]
-name = "Indie Rock Radio"
-url = "https://stream.example.com/indie"
+name = "0N 80s"
+url = "https://0n-80s.radionetz.de/0n-80s.mp3"
 
 [[stations]]
-name = "Lo-Fi Hip Hop"
-url = "https://stream.example.com/lofi"
+name = "WALM Old Time Radio"
+url = "https://icecast.walmradio.com:8443/otr"
 
 [[stations]]
-name = "Ambient Space"
-url = "https://stream.example.com/ambient"
+name = "SmoothJazz.com.pl"
+url = "https://bcast.vigormultimedia.com:48888/sjcompl320mp3"
+
+[[stations]]
+name = "Radio Armisa (Italy)"
+url = "https://onair.armisa.it/listen/armisa/radio.mp3"
