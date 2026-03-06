@@ -1,7 +1,9 @@
 {pkgs ? import <nixpkgs> {}}:
 pkgs.mkShell {
-  # nativeBuildInputs is usually what you want -- tools you need to run
-  buildInputs = [pkgs.mpv];
+  buildInputs = with pkgs; [
+    mpv
+    pkg-config
+  ];
 
   nativeBuildInputs = with pkgs; [
     gnumake
@@ -12,5 +14,12 @@ pkgs.mkShell {
     go-tools
     delve
     golangci-lint
+
+    # rust development (using stable from overlay)
+    (rust-bin.stable.latest.default.override {
+      extensions = ["rust-src" "rust-analyzer"];
+    })
+    clippy
+    rustfmt
   ];
 }
