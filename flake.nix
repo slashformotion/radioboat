@@ -18,10 +18,63 @@
       in function pkgs);
   in {
     packages = forAllSystems (pkgs: {
-      default = pkgs.callPackage ./package.nix {};
+      default = pkgs.rustPlatform.buildRustPackage {
+        pname = "radioboat";
+        version = "0.4.0";
+
+        src = pkgs.nix-gitignore.gitignoreSource [] ./.;
+
+        cargoLock.lockFile = ./Cargo.lock;
+
+        buildInputs = [pkgs.mpv];
+
+        nativeBuildInputs = [pkgs.makeWrapper pkgs.installShellFiles];
+
+        preFixup = ''
+          wrapProgram $out/bin/radioboat --prefix PATH ":" "${pkgs.lib.makeBinPath [pkgs.mpv]}";
+        '';
+
+        postInstall = ''
+          installShellCompletion --cmd radioboat \
+            --bash <($out/bin/radioboat completion bash) \
+            --fish <($out/bin/radioboat completion fish) \
+            --zsh <($out/bin/radioboat completion zsh)
+        '';
+
+        passthru = {
+          updateScript = pkgs.nix-update-script {};
+          tests.version = pkgs.testers.testVersion {
+            package = pkgs.radioboat;
+            command = "radioboat --version";
+          };
+        };
+
+        meta = with pkgs.lib; {
+          description = "Radioboat is a terminal web radio client, built with simplicity in mind.";
+          mainProgram = "radioboat";
+          homepage = "https://github.com/slashformotion/radioboat";
+          license = licenses.asl20;
+          platforms = platforms.linux ++ platforms.darwin;
+        };
+      };
     });
     devShells = forAllSystems (pkgs: {
-      default = import ./shell.nix {inherit pkgs;};
+      default = pkgs.mkShell {
+        buildInputs = with pkgs; [
+          mpv
+          pkg-config
+        ];
+
+        nativeBuildInputs = with pkgs; [
+          gnumake
+          just
+          (rust-bin.stable.latest.default.override {
+            extensions = ["rust-src" "rust-analyzer"];
+          })
+          clippy
+          rustfmt
+        ];
+      };
     });
   };
 }
