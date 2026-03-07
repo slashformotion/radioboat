@@ -2,6 +2,8 @@
 
 A terminal web radio client built with Rust and ratatui.
 
+![](docs/screenshot.png)
+
 ## Features
 
 - **Terminal UI** - Full-screen or compact mode
