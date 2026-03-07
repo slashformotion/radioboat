@@ -9,6 +9,16 @@ use tokio::sync::Mutex;
 use crate::icy::IcyMetadata;
 
 const USER_DATA_MEDIA_TITLE: u64 = 20_000_001;
+const USER_DATA_AUDIO_BITRATE: u64 = 20_000_002;
+const USER_DATA_AUDIO_PARAMS: u64 = 20_000_003;
+
+#[derive(Debug, Clone, Default)]
+#[allow(dead_code)]
+pub struct AudioParams {
+    pub samplerate: Option<u32>,
+    pub channel_count: Option<u32>,
+    pub format: Option<String>,
+}
 
 #[derive(Debug, Clone)]
 pub struct PlayerState {
@@ -16,6 +26,9 @@ pub struct PlayerState {
     pub muted: bool,
     pub current_track: String,
     pub icy_metadata: Option<IcyMetadata>,
+    pub audio_bitrate: Option<u32>,
+    #[allow(dead_code)]
+    pub audio_params: Option<AudioParams>,
 }
 
 pub struct MpvPlayer {
@@ -50,6 +63,8 @@ impl MpvPlayer {
             muted: false,
             current_track: String::new(),
             icy_metadata: None,
+            audio_bitrate: None,
+            audio_params: None,
         }));
 
         let player = Self {
@@ -76,13 +91,23 @@ impl MpvPlayer {
                     let (reader, writer) = stream.into_split();
                     let writer = Arc::new(tokio::sync::Mutex::new(writer));
 
+                    let mut w = writer.lock().await;
+
                     let cmd = serde_json::json!({
                         "command": ["observe_property", USER_DATA_MEDIA_TITLE, "media-title"]
                     });
-                    let cmd_str = serde_json::to_string(&cmd).unwrap() + "\n";
+                    let _ = w.write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes()).await;
 
-                    let mut w = writer.lock().await;
-                    let _ = w.write_all(cmd_str.as_bytes()).await;
+                    let cmd = serde_json::json!({
+                        "command": ["observe_property", USER_DATA_AUDIO_BITRATE, "audio-bitrate"]
+                    });
+                    let _ = w.write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes()).await;
+
+                    let cmd = serde_json::json!({
+                        "command": ["observe_property", USER_DATA_AUDIO_PARAMS, "audio-params"]
+                    });
+                    let _ = w.write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes()).await;
+
                     let _ = w.flush().await;
                     drop(w);
 
@@ -94,13 +119,43 @@ impl MpvPlayer {
                             if let Some(event) = json.get("event").and_then(|e| e.as_str()) {
                                 if event == "property-change" {
                                     if let Some(name) = json.get("name").and_then(|n| n.as_str()) {
-                                        if name == "media-title" {
-                                            if let Some(track) =
-                                                json.get("data").and_then(|d| d.as_str())
-                                            {
-                                                let mut s = state.lock().await;
-                                                s.current_track = track.to_string();
+                                        match name {
+                                            "media-title" => {
+                                                if let Some(track) =
+                                                    json.get("data").and_then(|d| d.as_str())
+                                                {
+                                                    let mut s = state.lock().await;
+                                                    s.current_track = track.to_string();
+                                                }
                                             }
+                                            "audio-bitrate" => {
+                                                if let Some(bitrate) =
+                                                    json.get("data").and_then(|d| d.as_u64())
+                                                {
+                                                    let mut s = state.lock().await;
+                                                    s.audio_bitrate = Some(bitrate as u32);
+                                                }
+                                            }
+                                            "audio-params" => {
+                                                if let Some(params) = json.get("data") {
+                                                    let mut s = state.lock().await;
+                                                    s.audio_params = Some(AudioParams {
+                                                        samplerate: params
+                                                            .get("samplerate")
+                                                            .and_then(|v| v.as_u64())
+                                                            .map(|v| v as u32),
+                                                        channel_count: params
+                                                            .get("channel-count")
+                                                            .and_then(|v| v.as_u64())
+                                                            .map(|v| v as u32),
+                                                        format: params
+                                                            .get("format")
+                                                            .and_then(|v| v.as_str())
+                                                            .map(String::from),
+                                                    });
+                                                }
+                                            }
+                                            _ => {}
                                         }
                                     }
                                 }

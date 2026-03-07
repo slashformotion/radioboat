@@ -2,7 +2,7 @@
 # This is the main configuration file for radioboat
 
 # Initial volume (0-110, default: 80)
-volume = 80
+volume = 20
 
 # Start muted (default: false)
 muted = false

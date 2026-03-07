@@ -11,7 +11,7 @@ type VoidCallback = Arc<Mutex<Option<Box<dyn Fn() + Send + Sync>>>>;
 type StringCallback = Arc<Mutex<Option<Box<dyn Fn(String) + Send + Sync>>>>;
 type FloatCallback = Arc<Mutex<Option<Box<dyn Fn(f64) + Send + Sync>>>>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MprisState {
     pub playing: bool,
     pub station_name: String,
@@ -20,6 +20,7 @@ pub struct MprisState {
     pub volume: f64,
     pub muted: bool,
     pub icy_metadata: Option<IcyMetadata>,
+    pub audio_bitrate: Option<u32>,
 }
 
 impl Default for MprisState {
@@ -32,6 +33,7 @@ impl Default for MprisState {
             volume: 80.0,
             muted: false,
             icy_metadata: None,
+            audio_bitrate: None,
         }
     }
 }

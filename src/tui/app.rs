@@ -369,10 +369,12 @@ impl App {
             let mut mpris_state = mpris.lock().await;
             let track_changed = mpris_state.track_title != player_state.current_track;
             let icy_changed = mpris_state.icy_metadata != player_state.icy_metadata;
+            let bitrate_changed = mpris_state.audio_bitrate != player_state.audio_bitrate;
 
-            if track_changed || icy_changed {
+            if track_changed || icy_changed || bitrate_changed {
                 mpris_state.track_title = player_state.current_track.clone();
                 mpris_state.icy_metadata = player_state.icy_metadata.clone();
+                mpris_state.audio_bitrate = player_state.audio_bitrate;
                 drop(mpris_state);
                 if let Some(ref server) = self.mpris_server {
                     server.lock().await.emit_properties_changed().await;
