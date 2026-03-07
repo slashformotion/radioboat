@@ -8,6 +8,9 @@ use crate::tui::ui;
 #[cfg(target_os = "linux")]
 use crate::mpris::{MprisServer, MprisState};
 
+#[cfg(target_os = "macos")]
+use crate::macos::{MacOsMediaCenter, MacOsMediaState};
+
 pub struct App {
     local_stations: Vec<Station>,
     stations: Vec<Station>,
@@ -24,6 +27,10 @@ pub struct App {
     mpris_state: Option<std::sync::Arc<tokio::sync::Mutex<MprisState>>>,
     #[cfg(target_os = "linux")]
     mpris_server: Option<std::sync::Arc<tokio::sync::Mutex<MprisServer>>>,
+    #[cfg(target_os = "macos")]
+    macos_state: Option<std::sync::Arc<tokio::sync::Mutex<MacOsMediaState>>>,
+    #[cfg(target_os = "macos")]
+    macos_center: Option<std::sync::Arc<tokio::sync::Mutex<MacOsMediaCenter>>>,
 }
 
 #[derive(Debug)]
@@ -99,6 +106,16 @@ impl App {
     ) {
         self.mpris_state = Some(state);
         self.mpris_server = Some(server);
+    }
+
+    #[cfg(target_os = "macos")]
+    pub fn set_macos(
+        &mut self,
+        state: std::sync::Arc<tokio::sync::Mutex<MacOsMediaState>>,
+        center: std::sync::Arc<tokio::sync::Mutex<MacOsMediaCenter>>,
+    ) {
+        self.macos_state = Some(state);
+        self.macos_center = Some(center);
     }
 
     pub const fn resize(&mut self, size: ratatui::layout::Size) {
@@ -343,6 +360,21 @@ impl App {
                 state.icy_metadata = icy_metadata;
             }
         }
+
+        #[cfg(target_os = "macos")]
+        {
+            if let Some(ref macos) = self.macos_state {
+                let mut state = macos.lock().await;
+                state.playing = true;
+                state.url = station.url.clone();
+                state.station_name = station.name.clone();
+                state.track_title.clear();
+                state.icy_metadata = icy_metadata;
+            }
+            if let Some(ref center) = self.macos_center {
+                center.lock().await.update_now_playing();
+            }
+        }
         Ok(())
     }
 
@@ -381,6 +413,28 @@ impl App {
                 drop(mpris_state);
                 if let Some(ref server) = self.mpris_server {
                     server.lock().await.emit_properties_changed().await;
+                }
+            }
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    async fn sync_macos_track(&self) {
+        if let Some(ref macos) = self.macos_state {
+            let player_state = self.state.lock().await;
+            let mut macos_state = macos.lock().await;
+            let new_title = player_state.track_title.clone().unwrap_or_default();
+            let track_changed = macos_state.track_title != new_title;
+            let artist_changed = macos_state.track_artist != player_state.track_artist;
+            let icy_changed = macos_state.icy_metadata != player_state.icy_metadata;
+
+            if track_changed || artist_changed || icy_changed {
+                macos_state.track_title = new_title;
+                macos_state.track_artist = player_state.track_artist.clone();
+                macos_state.icy_metadata = player_state.icy_metadata.clone();
+                drop(macos_state);
+                if let Some(ref center) = self.macos_center {
+                    center.lock().await.update_now_playing();
                 }
             }
         }
