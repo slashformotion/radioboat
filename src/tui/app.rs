@@ -367,12 +367,15 @@ impl App {
         if let Some(ref mpris) = self.mpris_state {
             let player_state = self.state.lock().await;
             let mut mpris_state = mpris.lock().await;
-            let track_changed = mpris_state.track_title != player_state.current_track;
+            let new_title = player_state.track_title.clone().unwrap_or_default();
+            let track_changed = mpris_state.track_title != new_title;
+            let artist_changed = mpris_state.track_artist != player_state.track_artist;
             let icy_changed = mpris_state.icy_metadata != player_state.icy_metadata;
             let bitrate_changed = mpris_state.audio_bitrate != player_state.audio_bitrate;
 
-            if track_changed || icy_changed || bitrate_changed {
-                mpris_state.track_title = player_state.current_track.clone();
+            if track_changed || artist_changed || icy_changed || bitrate_changed {
+                mpris_state.track_title = new_title;
+                mpris_state.track_artist = player_state.track_artist.clone();
                 mpris_state.icy_metadata = player_state.icy_metadata.clone();
                 mpris_state.audio_bitrate = player_state.audio_bitrate;
                 drop(mpris_state);

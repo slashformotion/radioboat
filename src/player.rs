@@ -25,6 +25,8 @@ pub struct PlayerState {
     pub volume: i64,
     pub muted: bool,
     pub current_track: String,
+    pub track_artist: Option<String>,
+    pub track_title: Option<String>,
     pub icy_metadata: Option<IcyMetadata>,
     pub audio_bitrate: Option<u32>,
     #[allow(dead_code)]
@@ -62,6 +64,8 @@ impl MpvPlayer {
             volume: 80,
             muted: false,
             current_track: String::new(),
+            track_artist: None,
+            track_title: None,
             icy_metadata: None,
             audio_bitrate: None,
             audio_params: None,
@@ -126,6 +130,15 @@ impl MpvPlayer {
                                                 {
                                                     let mut s = state.lock().await;
                                                     s.current_track = track.to_string();
+                                                    if let Some((artist, title)) =
+                                                        parse_artist_title(track)
+                                                    {
+                                                        s.track_artist = Some(artist);
+                                                        s.track_title = Some(title);
+                                                    } else {
+                                                        s.track_artist = None;
+                                                        s.track_title = Some(track.to_string());
+                                                    }
                                                 }
                                             }
                                             "audio-bitrate" => {
@@ -239,4 +252,14 @@ impl Drop for MpvPlayer {
             let _ = std::fs::remove_file(&self.socket_path);
         }
     }
+}
+
+fn parse_artist_title(track: &str) -> Option<(String, String)> {
+    let separator = track.find(" - ")?;
+    let artist = track[..separator].trim();
+    let title = track[separator + 3..].trim();
+    if artist.is_empty() || title.is_empty() {
+        return None;
+    }
+    Some((artist.to_string(), title.to_string()))
 }

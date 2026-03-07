@@ -16,6 +16,7 @@ pub struct MprisState {
     pub playing: bool,
     pub station_name: String,
     pub track_title: String,
+    pub track_artist: Option<String>,
     pub url: String,
     pub volume: f64,
     pub muted: bool,
@@ -29,6 +30,7 @@ impl Default for MprisState {
             playing: false,
             station_name: String::new(),
             track_title: String::new(),
+            track_artist: None,
             url: String::new(),
             volume: 80.0,
             muted: false,
@@ -178,6 +180,13 @@ impl MediaPlayer2Player {
         };
         if !title.is_empty() {
             metadata.insert("xesam:title", zbus::zvariant::Value::new(title));
+        }
+
+        if let Some(ref artist) = state.track_artist {
+            metadata.insert(
+                "xesam:artist",
+                zbus::zvariant::Value::new(vec![artist.clone()]),
+            );
         }
 
         if !state.url.is_empty() {
@@ -427,6 +436,13 @@ impl MprisServer {
                 };
                 if !title.is_empty() {
                     metadata.insert("xesam:title", zbus::zvariant::Value::new(title));
+                }
+
+                if let Some(ref artist) = state.track_artist {
+                    metadata.insert(
+                        "xesam:artist",
+                        zbus::zvariant::Value::new(vec![artist.clone()]),
+                    );
                 }
 
                 if !state.url.is_empty() {
