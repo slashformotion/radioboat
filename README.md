@@ -6,13 +6,9 @@
 ██   ██ ██   ██ ██████  ██  ██████  ██████   ██████  ██   ██    ██    
 ```
 
-![Contributors](https://img.shields.io/github/contributors/slashformotion/radioboat)
-![Forks](https://img.shields.io/github/forks/slashformotion/radioboat)
-![Stars](https://img.shields.io/github/stars/slashformotion/radioboat)
-![Licence](https://img.shields.io/github/license/slashformotion/radioboat)
-![Issues](https://img.shields.io/github/issues/slashformotion/radioboat)
-
 **Radioboat is a terminal web radio client, built with simplicity in mind**
+
+![](/docs/screenshot.png)
 
 ## Features
 
