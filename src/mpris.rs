@@ -45,6 +45,7 @@ struct MediaPlayer2 {
 }
 
 #[interface(name = "org.mpris.MediaPlayer2")]
+#[allow(clippy::unused_self, clippy::missing_const_for_fn, clippy::unnecessary_literal_bound)]
 impl MediaPlayer2 {
     #[zbus(property)]
     fn can_quit(&self) -> bool {
@@ -62,22 +63,22 @@ impl MediaPlayer2 {
     }
 
     #[zbus(property)]
-    fn identity(&self) -> &str {
+    fn identity(&self) -> &'static str {
         "Radioboat"
     }
 
     #[zbus(property)]
-    fn desktop_entry(&self) -> &str {
+    fn desktop_entry(&self) -> &'static str {
         "radioboat"
     }
 
     #[zbus(property)]
-    fn supported_uri_schemes(&self) -> Vec<&str> {
+    fn supported_uri_schemes(&self) -> Vec<&'static str> {
         vec!["http", "https"]
     }
 
     #[zbus(property)]
-    fn supported_mime_types(&self) -> Vec<&str> {
+    fn supported_mime_types(&self) -> Vec<&'static str> {
         vec!["audio/mpeg", "audio/aac", "audio/ogg", "audio/flac"]
     }
 
@@ -103,6 +104,12 @@ struct MediaPlayer2Player {
 }
 
 #[interface(name = "org.mpris.MediaPlayer2.Player")]
+#[allow(
+    clippy::unused_self,
+    clippy::missing_const_for_fn,
+    clippy::unnecessary_literal_bound,
+    clippy::used_underscore_binding
+)]
 impl MediaPlayer2Player {
     #[zbus(property)]
     async fn playback_status(&self) -> String {
@@ -115,7 +122,7 @@ impl MediaPlayer2Player {
     }
 
     #[zbus(property)]
-    fn loop_status(&self) -> &str {
+    fn loop_status(&self) -> &'static str {
         "None"
     }
 
@@ -201,6 +208,7 @@ impl MediaPlayer2Player {
             }
         }
 
+        drop(state);
         metadata
     }
 
@@ -214,7 +222,6 @@ impl MediaPlayer2Player {
         true
     }
 
-    // NOTE: must return true for GNOME to show the player in media controls
     #[zbus(property)]
     fn can_play(&self) -> bool {
         true
@@ -293,13 +300,18 @@ impl MediaPlayer2Player {
         Ok(())
     }
 
-    async fn seek(&self, _offset: i64) -> Result<()> {
+    #[allow(clippy::unused_async)]
+    async fn seek(&self, offset: i64) -> Result<()> {
+        let _ = offset;
         Err(zbus::fdo::Error::NotSupported(
             "Seek not supported for radio streams".into(),
         ))
     }
 
-    async fn set_position(&self, _track_id: &str, _position: i64) -> Result<()> {
+    #[allow(clippy::unused_async)]
+    async fn set_position(&self, track_id: &str, position: i64) -> Result<()> {
+        let _ = track_id;
+        let _ = position;
         Err(zbus::fdo::Error::NotSupported(
             "SetPosition not supported for radio streams".into(),
         ))

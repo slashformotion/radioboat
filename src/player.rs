@@ -40,6 +40,7 @@ pub struct MpvPlayer {
 }
 
 impl MpvPlayer {
+    #[allow(clippy::too_many_lines, clippy::cast_possible_truncation)]
     pub async fn new() -> anyhow::Result<Self> {
         let socket_path =
             std::env::temp_dir().join(format!("radioboat-mpv-{}.sock", std::process::id()));
@@ -149,7 +150,7 @@ impl MpvPlayer {
                                             }
                                             "audio-bitrate" => {
                                                 if let Some(bitrate) =
-                                                    json.get("data").and_then(|d| d.as_u64())
+                                                    json.get("data").and_then(serde_json::Value::as_u64)
                                                 {
                                                     let mut s = state.lock().await;
                                                     s.audio_bitrate = Some(bitrate as u32);
@@ -161,11 +162,11 @@ impl MpvPlayer {
                                                     s.audio_params = Some(AudioParams {
                                                         samplerate: params
                                                             .get("samplerate")
-                                                            .and_then(|v| v.as_u64())
+                                                            .and_then(serde_json::Value::as_u64)
                                                             .map(|v| v as u32),
                                                         channel_count: params
                                                             .get("channel-count")
-                                                            .and_then(|v| v.as_u64())
+                                                            .and_then(serde_json::Value::as_u64)
                                                             .map(|v| v as u32),
                                                         format: params
                                                             .get("format")

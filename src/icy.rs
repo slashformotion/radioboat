@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct IcyMetadata {
     pub name: Option<String>,
     pub genre: Option<String>,

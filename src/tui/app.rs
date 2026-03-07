@@ -333,7 +333,7 @@ impl App {
         self.play_current_station().await
     }
 
-    pub async fn set_volume(&mut self, volume: i64) -> anyhow::Result<()> {
+    pub async fn set_volume(&self, volume: i64) -> anyhow::Result<()> {
         let volume = volume.clamp(0, 110);
         self.player.set_volume(volume).await?;
         #[cfg(target_os = "linux")]
@@ -354,8 +354,8 @@ impl App {
             if let Some(ref mpris) = self.mpris_state {
                 let mut state = mpris.lock().await;
                 state.playing = true;
-                state.url = station.url.clone();
-                state.station_name = station.name.clone();
+                state.url.clone_from(&station.url);
+                state.station_name.clone_from(&station.name);
                 state.track_title.clear();
                 state.icy_metadata = icy_metadata;
             }
@@ -379,6 +379,7 @@ impl App {
     }
 
     #[cfg(target_os = "linux")]
+    #[allow(clippy::cast_precision_loss)]
     async fn sync_mpris_volume(&self) {
         if let Some(ref mpris) = self.mpris_state {
             let player_state = self.state.lock().await;
@@ -407,9 +408,10 @@ impl App {
 
             if track_changed || artist_changed || icy_changed || bitrate_changed {
                 mpris_state.track_title = new_title;
-                mpris_state.track_artist = player_state.track_artist.clone();
-                mpris_state.icy_metadata = player_state.icy_metadata.clone();
+                mpris_state.track_artist.clone_from(&player_state.track_artist);
+                mpris_state.icy_metadata.clone_from(&player_state.icy_metadata);
                 mpris_state.audio_bitrate = player_state.audio_bitrate;
+                drop(player_state);
                 drop(mpris_state);
                 if let Some(ref server) = self.mpris_server {
                     server.lock().await.emit_properties_changed().await;

@@ -92,6 +92,7 @@ fn open_in_editor(path: &str) -> anyhow::Result<()> {
 }
 
 #[tokio::main]
+#[allow(clippy::too_many_lines)]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
@@ -142,7 +143,9 @@ async fn main() -> anyhow::Result<()> {
         use std::sync::Arc;
         use tokio::sync::Mutex;
         let state = Arc::new(Mutex::new(mpris::MprisState::default()));
-        state.lock().await.volume = config.volume as f64;
+        #[allow(clippy::cast_precision_loss)]
+        let vol = config.volume as f64;
+        state.lock().await.volume = vol;
         state.lock().await.muted = config.muted;
         state
     };
@@ -267,7 +270,9 @@ async fn main() -> anyhow::Result<()> {
 
     let res = run_app(&mut terminal, &mut app, event_handler, args.ui_size).await;
 
+    #[allow(clippy::used_underscore_binding)]
     drop(_mpris_server);
+    #[allow(clippy::used_underscore_binding)]
     let _ = _macos_center;
     restore_terminal(args.ui_size)?;
 
@@ -353,6 +358,7 @@ async fn run_app(
                     app.previous_station().await?;
                 }
                 MprisCommand::SetVolume(vol) => {
+                    #[allow(clippy::cast_possible_truncation)]
                     app.set_volume(vol as i64).await?;
                 }
             },
