@@ -166,12 +166,14 @@ async fn main() -> anyhow::Result<()> {
         let sender = event_handler.sender();
         let mut mpris_server = mpris::MprisServer::new();
         let mpris_state_clone = mpris_server.state();
+        let runtime_handle = tokio::runtime::Handle::current();
 
         {
             let sender = sender.clone();
+            let handle = runtime_handle.clone();
             mpris_server.on_quit(move || {
                 let sender = sender.clone();
-                tokio::spawn(async move {
+                handle.spawn(async move {
                     let _ = sender.send(Event::Mpris(MprisCommand::Quit)).await;
                 });
             });
@@ -179,9 +181,10 @@ async fn main() -> anyhow::Result<()> {
 
         {
             let sender = sender.clone();
+            let handle = runtime_handle.clone();
             mpris_server.on_play(move |url| {
                 let sender = sender.clone();
-                tokio::spawn(async move {
+                handle.spawn(async move {
                     let _ = sender.send(Event::Mpris(MprisCommand::Play(url))).await;
                 });
             });
@@ -189,9 +192,10 @@ async fn main() -> anyhow::Result<()> {
 
         {
             let sender = sender.clone();
+            let handle = runtime_handle.clone();
             mpris_server.on_stop(move || {
                 let sender = sender.clone();
-                tokio::spawn(async move {
+                handle.spawn(async move {
                     let _ = sender.send(Event::Mpris(MprisCommand::Stop)).await;
                 });
             });
@@ -199,9 +203,10 @@ async fn main() -> anyhow::Result<()> {
 
         {
             let sender = sender.clone();
+            let handle = runtime_handle.clone();
             mpris_server.on_next(move || {
                 let sender = sender.clone();
-                tokio::spawn(async move {
+                handle.spawn(async move {
                     let _ = sender.send(Event::Mpris(MprisCommand::Next)).await;
                 });
             });
@@ -209,9 +214,10 @@ async fn main() -> anyhow::Result<()> {
 
         {
             let sender = sender.clone();
+            let handle = runtime_handle.clone();
             mpris_server.on_previous(move || {
                 let sender = sender.clone();
-                tokio::spawn(async move {
+                handle.spawn(async move {
                     let _ = sender.send(Event::Mpris(MprisCommand::Previous)).await;
                 });
             });
@@ -219,9 +225,10 @@ async fn main() -> anyhow::Result<()> {
 
         {
             let sender = sender.clone();
+            let handle = runtime_handle.clone();
             mpris_server.on_volume_change(move |vol| {
                 let sender = sender.clone();
-                tokio::spawn(async move {
+                handle.spawn(async move {
                     let _ = sender
                         .send(Event::Mpris(MprisCommand::SetVolume(vol)))
                         .await;
