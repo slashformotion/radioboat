@@ -100,17 +100,23 @@ impl MpvPlayer {
                     let cmd = serde_json::json!({
                         "command": ["observe_property", USER_DATA_MEDIA_TITLE, "media-title"]
                     });
-                    let _ = w.write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes()).await;
+                    let _ = w
+                        .write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes())
+                        .await;
 
                     let cmd = serde_json::json!({
                         "command": ["observe_property", USER_DATA_AUDIO_BITRATE, "audio-bitrate"]
                     });
-                    let _ = w.write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes()).await;
+                    let _ = w
+                        .write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes())
+                        .await;
 
                     let cmd = serde_json::json!({
                         "command": ["observe_property", USER_DATA_AUDIO_PARAMS, "audio-params"]
                     });
-                    let _ = w.write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes()).await;
+                    let _ = w
+                        .write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes())
+                        .await;
 
                     let _ = w.flush().await;
                     drop(w);

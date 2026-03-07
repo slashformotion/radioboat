@@ -46,7 +46,10 @@ pub async fn fetch_icy_metadata(url: &str) -> Option<IcyMetadata> {
         metadata.logo = Some(logo.to_string());
     }
 
-    if let Some(country) = headers.get("icy-country-code").and_then(|v| v.to_str().ok()) {
+    if let Some(country) = headers
+        .get("icy-country-code")
+        .and_then(|v| v.to_str().ok())
+    {
         metadata.country = Some(country.to_string());
     }
 

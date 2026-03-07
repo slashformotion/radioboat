@@ -465,7 +465,10 @@ impl MprisServer {
 
                 let mut changed: HashMap<&str, zbus::zvariant::Value<'_>> = HashMap::new();
                 changed.insert("Metadata", zbus::zvariant::Value::new(metadata));
-                changed.insert("PlaybackStatus", zbus::zvariant::Value::new(playback_status));
+                changed.insert(
+                    "PlaybackStatus",
+                    zbus::zvariant::Value::new(playback_status),
+                );
 
                 drop(state);
 
