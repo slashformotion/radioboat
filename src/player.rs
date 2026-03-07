@@ -211,6 +211,10 @@ impl MpvPlayer {
         self.send_command(&["loadfile", url, "replace"]).await
     }
 
+    pub async fn stop(&self) -> anyhow::Result<()> {
+        self.send_command(&["stop"]).await
+    }
+
     pub async fn toggle_mute(&self) -> anyhow::Result<()> {
         let muted = self.state.lock().await.muted;
         let new_muted = !muted;

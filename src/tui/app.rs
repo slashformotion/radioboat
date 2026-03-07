@@ -298,7 +298,7 @@ impl App {
     }
 
     pub async fn stop(&mut self) -> anyhow::Result<()> {
-        self.player.close().await?;
+        self.player.stop().await?;
         self.playing_index = None;
         #[cfg(target_os = "linux")]
         {

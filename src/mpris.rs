@@ -214,6 +214,7 @@ impl MediaPlayer2Player {
         true
     }
 
+    // NOTE: must return true for GNOME to show the player in media controls
     #[zbus(property)]
     fn can_play(&self) -> bool {
         true
