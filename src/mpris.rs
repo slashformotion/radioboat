@@ -221,7 +221,7 @@ impl MediaPlayer2Player {
 
     #[zbus(property)]
     fn can_pause(&self) -> bool {
-        true
+        false
     }
 
     #[zbus(property)]
