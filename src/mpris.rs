@@ -45,7 +45,11 @@ struct MediaPlayer2 {
 }
 
 #[interface(name = "org.mpris.MediaPlayer2")]
-#[allow(clippy::unused_self, clippy::missing_const_for_fn, clippy::unnecessary_literal_bound)]
+#[allow(
+    clippy::unused_self,
+    clippy::missing_const_for_fn,
+    clippy::unnecessary_literal_bound
+)]
 impl MediaPlayer2 {
     #[zbus(property)]
     fn can_quit(&self) -> bool {

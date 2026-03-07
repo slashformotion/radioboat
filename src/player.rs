@@ -149,8 +149,9 @@ impl MpvPlayer {
                                                 }
                                             }
                                             "audio-bitrate" => {
-                                                if let Some(bitrate) =
-                                                    json.get("data").and_then(serde_json::Value::as_u64)
+                                                if let Some(bitrate) = json
+                                                    .get("data")
+                                                    .and_then(serde_json::Value::as_u64)
                                                 {
                                                     let mut s = state.lock().await;
                                                     s.audio_bitrate = Some(bitrate as u32);

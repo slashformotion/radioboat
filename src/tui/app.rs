@@ -408,8 +408,12 @@ impl App {
 
             if track_changed || artist_changed || icy_changed || bitrate_changed {
                 mpris_state.track_title = new_title;
-                mpris_state.track_artist.clone_from(&player_state.track_artist);
-                mpris_state.icy_metadata.clone_from(&player_state.icy_metadata);
+                mpris_state
+                    .track_artist
+                    .clone_from(&player_state.track_artist);
+                mpris_state
+                    .icy_metadata
+                    .clone_from(&player_state.icy_metadata);
                 mpris_state.audio_bitrate = player_state.audio_bitrate;
                 drop(player_state);
                 drop(mpris_state);
