@@ -130,6 +130,7 @@ impl App {
         self.sync_mpris_track().await;
     }
 
+    #[allow(clippy::too_many_lines)]
     pub async fn handle_key(&mut self, key: crossterm::event::KeyEvent) -> anyhow::Result<bool> {
         use crossterm::event::KeyCode;
 
