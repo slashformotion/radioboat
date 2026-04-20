@@ -18,10 +18,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
+          use-flakehub: false
       - name: Format check
         run: nix develop --command cargo fmt -- --check
       - name: Clippy
@@ -34,10 +34,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/nix-installer-action@main
+          
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
+          use-flakehub: false
       - name: Run tests
         run: nix develop --command cargo test
 
@@ -49,10 +50,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
+          use-flakehub: false
       - name: Build with Cargo
         run: nix develop --command cargo build --release
 
@@ -64,10 +65,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
+          use-flakehub: false
       - name: Build Nix package
         run: nix build
       - name: Verify completions

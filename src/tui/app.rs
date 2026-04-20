@@ -23,6 +23,7 @@ pub struct App {
     show_help: bool,
     size: ratatui::layout::Size,
     refreshing: bool,
+    clipboard: Option<arboard::Clipboard>,
     #[cfg(target_os = "linux")]
     mpris_state: Option<std::sync::Arc<tokio::sync::Mutex<MprisState>>>,
     #[cfg(target_os = "linux")]
@@ -91,6 +92,7 @@ impl App {
             show_help: false,
             size: ratatui::layout::Size::default(),
             refreshing: false,
+            clipboard: arboard::Clipboard::new().ok(),
             #[cfg(target_os = "linux")]
             mpris_state: Some(mpris_state),
             #[cfg(target_os = "linux")]
@@ -199,6 +201,28 @@ impl App {
             }
             KeyCode::Char('?') => {
                 self.show_help = true;
+            }
+            KeyCode::Char('y') => {
+                let player_state = self.state.lock().await;
+                let track = player_state.current_track.clone();
+                drop(player_state);
+
+                if track.is_empty() {
+                    self.messages
+                        .push(Message::error("No song currently playing".to_string()));
+                } else if let Some(ref mut clipboard) = self.clipboard {
+                    match clipboard.set_text(&track) {
+                        Ok(()) => self
+                            .messages
+                            .push(Message::info(format!("Copied: {track}"))),
+                        Err(e) => self
+                            .messages
+                            .push(Message::error(format!("Copy failed: {e}"))),
+                    }
+                } else {
+                    self.messages
+                        .push(Message::error("Clipboard not available".to_string()));
+                }
             }
             KeyCode::Char('r') if !self.imports.is_empty() => {
                 self.refreshing = true;
