@@ -84,7 +84,7 @@ pub fn load_config(path: &str) -> anyhow::Result<Config> {
             std::fs::create_dir_all(parent)?;
         }
         std::fs::write(path_buf, DEFAULT_CONFIG_TEMPLATE)?;
-        eprintln!("Created default config at {}", expanded_ref);
+        eprintln!("Created default config at {expanded_ref}");
     }
 
     let content = std::fs::read_to_string(expanded_ref)?;
