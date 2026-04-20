@@ -1,56 +1,61 @@
 {
   lib,
-  buildGoModule,
-  mpv,
-  makeWrapper,
+  stdenv,
+  fetchFromGitHub,
   installShellFiles,
+  makeWrapper,
+  mpv,
   nix-update-script,
-  testers,
-  nix-gitignore,
   radioboat,
+  rustPlatform,
+  testers,
+  versionCheckHook,
 }:
-buildGoModule rec {
+
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "radioboat";
-  version = "0.3.0";
+  version = "0.5.0";
 
-  src = nix-gitignore.gitignoreSource [] ./.;
+  src = fetchFromGitHub {
+    owner = "slashformotion";
+    repo = "radioboat";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-mPktliuWyrXuNzMCdMFZk5Q7lIkRk+y4nX3IBnCc5Mc=";
+  };
 
-  vendorHash = "sha256-PYO1ZhbNpzN5AJMNo4odSJWufVeRTpUC6i9ZAJryRJo=";
+  __structuredAttrs = true;
 
-  buildInputs = [mpv];
+  strictDeps = true;
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/slashformotion/radioboat/internal/buildinfo.Version=${version}"
+  cargoHash = "sha256-fRF1FvwtvVJSTCK8DcZib6wMLpo73YtV7j+kjt4nVTo=";
+
+  nativeBuildInputs = [
+    makeWrapper
+    installShellFiles
   ];
 
-  nativeBuildInputs = [makeWrapper installShellFiles];
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   preFixup = ''
-    wrapProgram $out/bin/radioboat --prefix PATH ":" "${lib.makeBinPath [mpv]}";
+    wrapProgram $out/bin/radioboat --prefix PATH ":" "${lib.makeBinPath [ mpv ]}";
   '';
 
-  postInstall = ''
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd radioboat \
       --bash <($out/bin/radioboat completion bash) \
       --fish <($out/bin/radioboat completion fish) \
       --zsh <($out/bin/radioboat completion zsh)
   '';
 
-  passthru = {
-    updateScript = nix-update-script {};
-    tests.version = testers.testVersion {
-      package = radioboat;
-      command = "radioboat version";
-    };
-  };
+  doInstallCheck = true;
 
-  meta = with lib; {
+  meta = {
     description = "Terminal web radio client";
-    mainProgram = "radioboat";
     homepage = "https://github.com/slashformotion/radioboat";
-    license = licenses.asl20;
-    platforms = platforms.linux;
+    changelog = "https://github.com/slashformotion/radioboat/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ zendo ];
+    mainProgram = "radioboat";
+    platforms = lib.platforms.linux;
   };
-}
+})
