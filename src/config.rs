@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
@@ -43,9 +45,49 @@ impl Default for Config {
     }
 }
 
+pub const DEFAULT_CONFIG_TEMPLATE: &str = r#"# Radioboat Configuration
+# This is the main configuration file for radioboat
+
+# Initial volume (0-110, default: 80)
+volume = 20
+
+# Start muted (default: false)
+muted = false
+
+# Remote station list imports (optional)
+# Can be HTTP/HTTPS URLs or local file paths
+# [[imports]]
+# name = "my small list"
+# url = "./remote.toml"
+
+# [[imports]]
+# name = "Online Stations"
+# url = "https://example.com/stations.toml"
+
+# Local station list
+[[stations]]
+name = "Classic Vinyl HD"
+url = "https://icecast.walmradio.com:8443/classic"
+
+[[stations]]
+name = "Dance Wave!"
+url = "https://dancewave.online/dance.mp3"
+"#;
+
 pub fn load_config(path: &str) -> anyhow::Result<Config> {
     let expanded_path = shellexpand::tilde(path);
-    let content = std::fs::read_to_string(expanded_path.as_ref())?;
+    let expanded_ref = expanded_path.as_ref();
+    let path_buf = Path::new(expanded_ref);
+
+    if !path_buf.exists() {
+        if let Some(parent) = path_buf.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(path_buf, DEFAULT_CONFIG_TEMPLATE)?;
+        eprintln!("Created default config at {expanded_ref}");
+    }
+
+    let content = std::fs::read_to_string(expanded_ref)?;
     let mut config: Config = toml::from_str(&content)?;
     for station in &mut config.stations {
         station.is_remote = false;
