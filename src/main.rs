@@ -103,7 +103,7 @@ async fn main() -> anyhow::Result<()> {
                 if let Some(parent) = expanded_path.parent() {
                     std::fs::create_dir_all(parent)?;
                 }
-                std::fs::write(&expanded_path, DEFAULT_CONFIG_TEMPLATE)?;
+                std::fs::write(&expanded_path, config::DEFAULT_CONFIG_TEMPLATE)?;
             }
             open_in_editor(&config)?;
             return Ok(());
@@ -365,20 +365,3 @@ async fn run_app(
         }
     }
 }
-
-const DEFAULT_CONFIG_TEMPLATE: &str = r#"volume = 80
-muted = false
-
-# Optional: import remote station lists
-# [[imports]]
-# name = "My Remote Stations"
-# url = "https://example.com/stations.toml"
-
-[[stations]]
-name = "Example Station"
-url = "https://example.com/stream"
-
-[[stations]]
-name = "Another Station"
-url = "https://example.org/stream"
-"#;
