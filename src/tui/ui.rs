@@ -239,9 +239,10 @@ fn draw_help_bar(frame: &mut ratatui::Frame, area: Rect, has_imports: bool) {
     let mut shortcuts: Vec<(&str, &str)> = vec![
         ("?", "Help"),
         ("Enter", "Play"),
+        ("y", "Copy"),
         ("m", "Mute"),
         ("*/+", "Vol+"),
-        ("-/\\", "Vol-"),
+        ("-/", "Vol-"),
     ];
 
     if has_imports {
@@ -272,7 +273,7 @@ fn draw_help_bar(frame: &mut ratatui::Frame, area: Rect, has_imports: bool) {
 
 fn draw_help_popup(frame: &mut ratatui::Frame, area: Rect, has_imports: bool) {
     let popup_width = 65.min(area.width);
-    let popup_height = if has_imports { 20 } else { 18 }.min(area.height);
+    let popup_height = if has_imports { 21 } else { 19 }.min(area.height);
     let popup_area = Rect::new(
         (area.width.saturating_sub(popup_width)) / 2,
         (area.height.saturating_sub(popup_height)) / 2,
@@ -309,7 +310,8 @@ fn draw_help_popup(frame: &mut ratatui::Frame, area: Rect, has_imports: bool) {
         Line::from(vec![
             Span::styled("  →/l  ", key_style),
             Span::raw(" Page right    "),
-            Span::raw("                "),
+            Span::styled("   y   ", key_style),
+            Span::raw(" Copy song     "),
         ]),
         Line::from(""),
     ];
