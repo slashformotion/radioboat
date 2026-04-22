@@ -213,6 +213,7 @@ impl MpvPlayer {
         self.send_command(&["loadfile", url, "replace"]).await
     }
 
+    #[cfg(target_os = "linux")]
     pub async fn stop(&self) -> anyhow::Result<()> {
         self.send_command(&["stop"]).await
     }

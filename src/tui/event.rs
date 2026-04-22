@@ -3,6 +3,7 @@ use futures::{FutureExt, StreamExt};
 use std::time::Duration;
 
 #[derive(Debug, Clone)]
+#[cfg(target_os = "linux")]
 pub enum MprisCommand {
     Quit,
     Play(String),
@@ -22,13 +23,15 @@ pub enum Event {
 
 pub struct EventHandler {
     event_rx: tokio::sync::mpsc::Receiver<Event>,
+    #[cfg(target_os = "linux")]
     event_tx: tokio::sync::mpsc::Sender<Event>,
 }
 
 impl EventHandler {
     pub fn new(tick_rate: Duration) -> Self {
         let (event_tx, event_rx) = tokio::sync::mpsc::channel(100);
-        let tx = event_tx.clone();
+        #[cfg(target_os = "linux")]
+        let sender = event_tx.clone();
 
         tokio::spawn(async move {
             let mut reader = crossterm::event::EventStream::new();
@@ -65,10 +68,12 @@ impl EventHandler {
 
         Self {
             event_rx,
-            event_tx: tx,
+            #[cfg(target_os = "linux")]
+            event_tx: sender,
         }
     }
 
+    #[cfg(target_os = "linux")]
     pub fn sender(&self) -> tokio::sync::mpsc::Sender<Event> {
         self.event_tx.clone()
     }

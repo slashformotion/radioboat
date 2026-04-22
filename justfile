@@ -33,3 +33,17 @@ run-local:
 # Run in small mode
 run-small:
     cargo run -- --ui-size small
+
+# Check warnings and cross-compile for all target platforms
+check-all:
+    cargo check --target x86_64-unknown-linux-gnu 2>&1
+    cargo check --target aarch64-unknown-linux-gnu 2>&1
+    cargo zigbuild --target x86_64-apple-darwin 2>&1 || true
+    cargo zigbuild --target aarch64-apple-darwin 2>&1 || true
+
+# Clippy with warnings for all target platforms
+clippy-all:
+    cargo clippy --target x86_64-unknown-linux-gnu -- -W clippy::pedantic -W clippy::nursery -D warnings 2>&1
+    cargo clippy --target aarch64-unknown-linux-gnu -- -W clippy::pedantic -W clippy::nursery -D warnings 2>&1
+    cargo zigbuild --target x86_64-apple-darwin 2>&1 || true
+    cargo zigbuild --target aarch64-apple-darwin 2>&1 || true

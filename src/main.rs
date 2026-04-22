@@ -270,8 +270,7 @@ async fn main() -> anyhow::Result<()> {
 
     let res = run_app(&mut terminal, &mut app, event_handler, args.ui_size).await;
 
-    #[allow(clippy::used_underscore_binding)]
-    drop(_mpris_server);
+    let _ = _mpris_server;
     #[allow(clippy::used_underscore_binding)]
     let _ = _macos_center;
     restore_terminal(args.ui_size)?;

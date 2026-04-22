@@ -97,6 +97,10 @@ impl App {
             mpris_state: Some(mpris_state),
             #[cfg(target_os = "linux")]
             mpris_server: None,
+            #[cfg(target_os = "macos")]
+            macos_state: None,
+            #[cfg(target_os = "macos")]
+            macos_center: None,
         }
     }
 
@@ -128,6 +132,8 @@ impl App {
         self.messages.retain(|m| Instant::now() < m.expires);
         #[cfg(target_os = "linux")]
         self.sync_mpris_track().await;
+        #[cfg(target_os = "macos")]
+        self.sync_macos_track().await;
     }
 
     #[allow(clippy::too_many_lines)]
@@ -296,11 +302,13 @@ impl App {
         self.refreshing
     }
 
+    #[cfg(target_os = "linux")]
     pub async fn quit(&self) -> anyhow::Result<()> {
         self.player.close().await.ok();
         Ok(())
     }
 
+    #[cfg(target_os = "linux")]
     pub async fn play_url(&mut self, url: &str) -> anyhow::Result<()> {
         if let Some(idx) = self.stations.iter().position(|s| s.url == url) {
             self.cursor = idx;
@@ -322,6 +330,7 @@ impl App {
         Ok(())
     }
 
+    #[cfg(target_os = "linux")]
     pub async fn stop(&mut self) -> anyhow::Result<()> {
         self.player.stop().await?;
         self.playing_index = None;
@@ -334,6 +343,7 @@ impl App {
         Ok(())
     }
 
+    #[cfg(target_os = "linux")]
     pub async fn next_station(&mut self) -> anyhow::Result<()> {
         if self.stations.is_empty() {
             return Ok(());
@@ -346,6 +356,7 @@ impl App {
         self.play_current_station().await
     }
 
+    #[cfg(target_os = "linux")]
     pub async fn previous_station(&mut self) -> anyhow::Result<()> {
         if self.stations.is_empty() {
             return Ok(());
@@ -358,6 +369,7 @@ impl App {
         self.play_current_station().await
     }
 
+    #[cfg(target_os = "linux")]
     pub async fn set_volume(&self, volume: i64) -> anyhow::Result<()> {
         let volume = volume.clamp(0, 110);
         self.player.set_volume(volume).await?;
