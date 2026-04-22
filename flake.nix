@@ -68,8 +68,10 @@
         nativeBuildInputs = with pkgs; [
           gnumake
           just
+          cargo-zigbuild
           (rust-bin.stable.latest.default.override {
             extensions = ["rust-src" "rust-analyzer"];
+            targets = ["aarch64-unknown-linux-gnu" "x86_64-apple-darwin" "aarch64-apple-darwin"];
           })
           clippy
           rustfmt

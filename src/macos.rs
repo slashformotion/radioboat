@@ -26,45 +26,19 @@ impl Default for MacOsMediaState {
     }
 }
 
-type VoidCallback = Arc<Mutex<Option<Box<dyn Fn() + Send + Sync>>>>;
-
 pub struct MacOsMediaCenter {
     state: Arc<Mutex<MacOsMediaState>>,
-    play_pause_callback: VoidCallback,
-    next_callback: VoidCallback,
-    prev_callback: VoidCallback,
 }
 
 impl MacOsMediaCenter {
     pub fn new() -> Self {
         Self {
             state: Arc::new(Mutex::new(MacOsMediaState::default())),
-            play_pause_callback: Arc::new(Mutex::new(None)),
-            next_callback: Arc::new(Mutex::new(None)),
-            prev_callback: Arc::new(Mutex::new(None)),
         }
     }
 
     pub fn state(&self) -> Arc<Mutex<MacOsMediaState>> {
         self.state.clone()
-    }
-
-    pub fn on_play_pause<F: Fn() + Send + Sync + 'static>(&self, callback: F) {
-        if let Ok(mut cb) = self.play_pause_callback.try_lock() {
-            *cb = Some(Box::new(callback));
-        }
-    }
-
-    pub fn on_next<F: Fn() + Send + Sync + 'static>(&self, callback: F) {
-        if let Ok(mut cb) = self.next_callback.try_lock() {
-            *cb = Some(Box::new(callback));
-        }
-    }
-
-    pub fn on_previous<F: Fn() + Send + Sync + 'static>(&self, callback: F) {
-        if let Ok(mut cb) = self.prev_callback.try_lock() {
-            *cb = Some(Box::new(callback));
-        }
     }
 
     pub fn start(&mut self) -> anyhow::Result<()> {
