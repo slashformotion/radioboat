@@ -165,7 +165,7 @@ async fn main() -> anyhow::Result<()> {
     let event_handler = EventHandler::new(Duration::from_millis(100));
 
     #[cfg(target_os = "linux")]
-    let mpris_server = {
+    let _mpris_server = {
         let sender = event_handler.sender();
         let mut mpris_server = mpris::MprisServer::new();
         let mpris_state_clone = mpris_server.state();
