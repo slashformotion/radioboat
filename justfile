@@ -38,12 +38,20 @@ run-small:
 check-all:
     cargo check --target x86_64-unknown-linux-gnu 2>&1
     cargo check --target aarch64-unknown-linux-gnu 2>&1
-    cargo zigbuild --target x86_64-apple-darwin 2>&1 || true
-    cargo zigbuild --target aarch64-apple-darwin 2>&1 || true
+    cargo check --target x86_64-apple-darwin 2>&1
+    cargo check --target aarch64-apple-darwin 2>&1
 
 # Clippy with warnings for all target platforms
 clippy-all:
+    cargo clippy -- -W clippy::pedantic -W clippy::nursery -D warnings 2>&1
     cargo clippy --target x86_64-unknown-linux-gnu -- -W clippy::pedantic -W clippy::nursery -D warnings 2>&1
     cargo clippy --target aarch64-unknown-linux-gnu -- -W clippy::pedantic -W clippy::nursery -D warnings 2>&1
-    cargo zigbuild --target x86_64-apple-darwin 2>&1 || true
-    cargo zigbuild --target aarch64-apple-darwin 2>&1 || true
+    cargo clippy --target x86_64-apple-darwin -- -W clippy::pedantic -W clippy::nursery -D warnings 2>&1
+    cargo clippy --target aarch64-apple-darwin -- -W clippy::pedantic -W clippy::nursery -D warnings 2>&1
+
+# Build for all target platforms
+build-all:
+    cargo zigbuild --release --target x86_64-unknown-linux-gnu 2>&1
+    cargo zigbuild --release --target aarch64-unknown-linux-gnu 2>&1
+    cargo zigbuild --release --target x86_64-apple-darwin 2>&1
+    cargo zigbuild --release --target aarch64-apple-darwin 2>&1

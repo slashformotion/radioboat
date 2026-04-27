@@ -188,7 +188,9 @@ impl App {
                 self.sync_mpris_mute().await;
             }
             KeyCode::Enter => {
-                self.play_current_station().await?;
+                if self.playing_index != Some(self.cursor) {
+                    self.play_current_station().await?;
+                }
             }
             KeyCode::Char('*' | '+') => {
                 if let Err(e) = self.player.volume_up().await {
@@ -403,8 +405,8 @@ impl App {
             if let Some(ref macos) = self.macos_state {
                 let mut state = macos.lock().await;
                 state.playing = true;
-                state.url = station.url.clone();
-                state.station_name = station.name.clone();
+                state.url.clone_from(&station.url);
+                state.station_name.clone_from(&station.name);
                 state.track_title.clear();
                 state.icy_metadata = icy_metadata;
             }
@@ -464,17 +466,23 @@ impl App {
     #[cfg(target_os = "macos")]
     async fn sync_macos_track(&self) {
         if let Some(ref macos) = self.macos_state {
-            let player_state = self.state.lock().await;
+            let (new_title, player_artist, player_icy) = {
+                let player_state = self.state.lock().await;
+                (
+                    player_state.track_title.clone().unwrap_or_default(),
+                    player_state.track_artist.clone(),
+                    player_state.icy_metadata.clone(),
+                )
+            };
             let mut macos_state = macos.lock().await;
-            let new_title = player_state.track_title.clone().unwrap_or_default();
             let track_changed = macos_state.track_title != new_title;
-            let artist_changed = macos_state.track_artist != player_state.track_artist;
-            let icy_changed = macos_state.icy_metadata != player_state.icy_metadata;
+            let artist_changed = macos_state.track_artist != player_artist;
+            let icy_changed = macos_state.icy_metadata != player_icy;
 
             if track_changed || artist_changed || icy_changed {
                 macos_state.track_title = new_title;
-                macos_state.track_artist = player_state.track_artist.clone();
-                macos_state.icy_metadata = player_state.icy_metadata.clone();
+                macos_state.track_artist = player_artist;
+                macos_state.icy_metadata = player_icy;
                 drop(macos_state);
                 if let Some(ref center) = self.macos_center {
                     center.lock().await.update_now_playing();

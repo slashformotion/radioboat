@@ -247,17 +247,11 @@ async fn main() -> anyhow::Result<()> {
         app.set_mpris(mpris_state_clone, mpris_server.clone());
         Some(mpris_server)
     };
-    #[cfg(not(target_os = "linux"))]
-    let _mpris_server: Option<()> = None;
 
     #[cfg(target_os = "macos")]
     {
-        let mut macos_center = macos::MacOsMediaCenter::new();
+        let macos_center = macos::MacOsMediaCenter::new();
         let macos_state = macos_center.state();
-
-        if let Err(e) = macos_center.start() {
-            eprintln!("Warning: Failed to start macOS media center: {e}");
-        }
 
         app.set_macos(
             macos_state,
