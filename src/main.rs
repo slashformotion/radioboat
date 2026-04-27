@@ -248,10 +248,10 @@ async fn main() -> anyhow::Result<()> {
         Some(mpris_server)
     };
     #[cfg(not(target_os = "linux"))]
-    let mpris_server: Option<()> = None;
+    let _mpris_server: Option<()> = None;
 
     #[cfg(target_os = "macos")]
-    let macos_center = {
+    {
         let mut macos_center = macos::MacOsMediaCenter::new();
         let macos_state = macos_center.state();
 
@@ -263,15 +263,10 @@ async fn main() -> anyhow::Result<()> {
             macos_state,
             std::sync::Arc::new(tokio::sync::Mutex::new(macos_center)),
         );
-        Some(())
-    };
-    #[cfg(not(target_os = "macos"))]
-    let macos_center: Option<()> = None;
+    }
 
     let res = run_app(&mut terminal, &mut app, event_handler, args.ui_size).await;
 
-    let _ = mpris_server;
-    let _ = macos_center;
     restore_terminal(args.ui_size)?;
 
     if let Err(e) = res {
