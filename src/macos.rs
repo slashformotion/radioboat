@@ -54,15 +54,16 @@ impl MacOsMediaCenter {
 
     #[cfg(target_os = "macos")]
     fn update_now_playing_impl(&self) {
-        use cocoa::base::{id, nil};
-        use cocoa::foundation::NSString;
-        use objc::{class, msg_send, sel, sel_impl};
+        use objc2::runtime::AnyObject;
+        use objc2::{class, msg_send};
+        use objc2_foundation::NSString;
+        use objc2_media_player::MPNowPlayingInfoCenter;
 
         unsafe {
             let state = self.state.try_lock().unwrap();
-            let info_center: id = msg_send![class!(MPNowPlayingInfoCenter), defaultCenter];
+            let info_center = MPNowPlayingInfoCenter::defaultCenter();
 
-            let info: id = msg_send![class!(NSMutableDictionary), dictionary];
+            let info: *mut AnyObject = msg_send![class!(NSMutableDictionary), dictionary];
 
             let title = if state.track_title.is_empty() {
                 state.station_name.clone()
@@ -71,36 +72,34 @@ impl MacOsMediaCenter {
             };
 
             if !title.is_empty() {
-                let title_ns = NSString::alloc(nil).init_str(&title);
-                let key = NSString::alloc(nil).init_str("kMRMediaItemPropertyTitle");
-                let _: () = msg_send![info, setObject: title_ns forKey: key];
+                let title_ns = NSString::from_str(&title);
+                let key = NSString::from_str("kMRMediaItemPropertyTitle");
+                let _: () = msg_send![info, setObject: &*title_ns, forKey: &*key];
             }
 
             if let Some(ref artist) = state.track_artist {
-                let artist_ns = NSString::alloc(nil).init_str(artist);
-                let key = NSString::alloc(nil).init_str("kMRMediaItemPropertyArtist");
-                let _: () = msg_send![info, setObject: artist_ns forKey: key];
+                let artist_ns = NSString::from_str(artist);
+                let key = NSString::from_str("kMRMediaItemPropertyArtist");
+                let _: () = msg_send![info, setObject: &*artist_ns, forKey: &*key];
             }
 
-            let duration_key =
-                NSString::alloc(nil).init_str("kMRMediaItemPropertyPlaybackDuration");
-            let duration_val: id = msg_send![class!(NSNumber), numberWithDouble: 0.0];
-            let _: () = msg_send![info, setObject: duration_val forKey: duration_key];
+            let duration_key = NSString::from_str("kMRMediaItemPropertyPlaybackDuration");
+            let duration_val: *mut AnyObject = msg_send![class!(NSNumber), numberWithDouble: 0.0];
+            let _: () = msg_send![info, setObject: duration_val, forKey: &*duration_key];
 
-            let rate: f64 = if state.playing { 1.0 } else { 0.0 };
-            let rate_key = NSString::alloc(nil).init_str("kMPNowPlayingInfoPropertyPlaybackRate");
-            let rate_val: id = msg_send![class!(NSNumber), numberWithDouble: rate];
-            let _: () = msg_send![info, setObject: rate_val forKey: rate_key];
+            let rate = if state.playing { 1.0 } else { 0.0 };
+            let rate_key = NSString::from_str("kMPNowPlayingInfoPropertyPlaybackRate");
+            let rate_val: *mut AnyObject = msg_send![class!(NSNumber), numberWithDouble: rate];
+            let _: () = msg_send![info, setObject: rate_val, forKey: &*rate_key];
 
-            let elapsed_key =
-                NSString::alloc(nil).init_str("kMPNowPlayingInfoPropertyElapsedPlaybackTime");
-            let elapsed_val: id = msg_send![class!(NSNumber), numberWithDouble: 0.0];
-            let _: () = msg_send![info, setObject: elapsed_val forKey: elapsed_key];
+            let elapsed_key = NSString::from_str("kMPNowPlayingInfoPropertyElapsedPlaybackTime");
+            let elapsed_val: *mut AnyObject = msg_send![class!(NSNumber), numberWithDouble: 0.0];
+            let _: () = msg_send![info, setObject: elapsed_val, forKey: &*elapsed_key];
 
-            let _: () = msg_send![info_center, setNowPlayingInfo: info];
+            let _: () = msg_send![&*info_center, setNowPlayingInfo: info];
 
-            let playback_state: cocoa::foundation::NSInteger = if state.playing { 1 } else { 0 };
-            let _: () = msg_send![info_center, setPlaybackState: playback_state];
+            let playback_state: i64 = if state.playing { 1 } else { 0 };
+            let _: () = msg_send![&*info_center, setPlaybackState: playback_state];
         }
     }
 }
