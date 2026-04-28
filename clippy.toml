@@ -1,0 +1,8 @@
+# Clippy configuration
+# Enable pedantic lints by default to catch more issues
+
+# Warn on unused variables
+too-many-lines-threshold = 200
+
+# Function complexity
+cognitive-complexity-threshold = 30

@@ -26,6 +26,7 @@ pub struct Config {
     pub muted: bool,
     #[serde(default)]
     pub imports: Vec<Import>,
+    #[serde(default)]
     pub stations: Vec<Station>,
 }
 

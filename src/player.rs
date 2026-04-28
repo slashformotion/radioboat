@@ -101,25 +101,40 @@ impl MpvPlayer {
                     let cmd = serde_json::json!({
                         "command": ["observe_property", USER_DATA_MEDIA_TITLE, "media-title"]
                     });
-                    let _ = w
+                    if let Err(e) = w
                         .write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes())
-                        .await;
+                        .await
+                    {
+                        eprintln!("Error: Failed to send media-title observe to mpv: {e}");
+                        return;
+                    }
 
                     let cmd = serde_json::json!({
                         "command": ["observe_property", USER_DATA_AUDIO_BITRATE, "audio-bitrate"]
                     });
-                    let _ = w
+                    if let Err(e) = w
                         .write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes())
-                        .await;
+                        .await
+                    {
+                        eprintln!("Error: Failed to send audio-bitrate observe to mpv: {e}");
+                        return;
+                    }
 
                     let cmd = serde_json::json!({
                         "command": ["observe_property", USER_DATA_AUDIO_PARAMS, "audio-params"]
                     });
-                    let _ = w
+                    if let Err(e) = w
                         .write_all((serde_json::to_string(&cmd).unwrap() + "\n").as_bytes())
-                        .await;
+                        .await
+                    {
+                        eprintln!("Error: Failed to send audio-params observe to mpv: {e}");
+                        return;
+                    }
 
-                    let _ = w.flush().await;
+                    if let Err(e) = w.flush().await {
+                        eprintln!("Error: Failed to flush mpv socket: {e}");
+                        return;
+                    }
                     drop(w);
 
                     let reader = BufReader::new(reader);
@@ -213,6 +228,7 @@ impl MpvPlayer {
         self.send_command(&["loadfile", url, "replace"]).await
     }
 
+    #[cfg(target_os = "linux")]
     pub async fn stop(&self) -> anyhow::Result<()> {
         self.send_command(&["stop"]).await
     }

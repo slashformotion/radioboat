@@ -247,33 +247,20 @@ async fn main() -> anyhow::Result<()> {
         app.set_mpris(mpris_state_clone, mpris_server.clone());
         Some(mpris_server)
     };
-    #[cfg(not(target_os = "linux"))]
-    let _mpris_server: Option<()> = None;
 
     #[cfg(target_os = "macos")]
-    let _macos_center = {
-        let mut macos_center = macos::MacOsMediaCenter::new();
+    {
+        let macos_center = macos::MacOsMediaCenter::new();
         let macos_state = macos_center.state();
-
-        if let Err(e) = macos_center.start() {
-            eprintln!("Warning: Failed to start macOS media center: {e}");
-        }
 
         app.set_macos(
             macos_state,
             std::sync::Arc::new(tokio::sync::Mutex::new(macos_center)),
         );
-        Some(())
-    };
-    #[cfg(not(target_os = "macos"))]
-    let _macos_center: Option<()> = None;
+    }
 
     let res = run_app(&mut terminal, &mut app, event_handler, args.ui_size).await;
 
-    #[allow(clippy::used_underscore_binding)]
-    drop(_mpris_server);
-    #[allow(clippy::used_underscore_binding)]
-    let _ = _macos_center;
     restore_terminal(args.ui_size)?;
 
     if let Err(e) = res {
