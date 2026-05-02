@@ -1,6 +1,6 @@
 [package]
 name = "radioboat"
-version = "0.4.0"
+version = "0.7.0"
 edition = "2021"
 description = "Radioboat is a terminal web radio client, built with simplicity in mind."
 license = "Apache-2.0"

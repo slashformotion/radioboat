@@ -20,7 +20,7 @@
     packages = forAllSystems (pkgs: {
       default = pkgs.rustPlatform.buildRustPackage {
         pname = "radioboat";
-        version = "0.4.0";
+        version = "0.7.0";
 
         src = pkgs.nix-gitignore.gitignoreSource [] ./.;
 
