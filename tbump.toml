@@ -35,3 +35,7 @@ cmd = "cargo test"
 [[before_commit]]
 name = "Run clippy"
 cmd = "cargo clippy"
+
+[[before_commit]]
+name = "Nix build"
+cmd = "nix build"
