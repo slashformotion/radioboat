@@ -1,9 +1,13 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
   };
-  outputs = {nixpkgs, rust-overlay, ...}: let
+  outputs = {
+    nixpkgs,
+    rust-overlay,
+    ...
+  }: let
     forAllSystems = function:
       nixpkgs.lib.genAttrs [
         "x86_64-darwin"
@@ -15,7 +19,8 @@
           inherit system;
           overlays = [rust-overlay.overlays.default];
         };
-      in function pkgs);
+      in
+        function pkgs);
   in {
     packages = forAllSystems (pkgs: {
       default = pkgs.rustPlatform.buildRustPackage {
