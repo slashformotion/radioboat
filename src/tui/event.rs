@@ -54,11 +54,10 @@ impl EventHandler {
                                     break;
                                 }
                             }
-                            CrosstermEvent::Resize(cols, rows) => {
-                                if event_tx.send(Event::Resize(ratatui::layout::Size::new(cols, rows))).await.is_err() {
+                            CrosstermEvent::Resize(cols, rows)
+                                if event_tx.send(Event::Resize(ratatui::layout::Size::new(cols, rows))).await.is_err() => {
                                     break;
                                 }
-                            }
                             _ => {}
                         }
                     }

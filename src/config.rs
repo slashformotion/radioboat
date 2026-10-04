@@ -155,7 +155,7 @@ pub fn merge_stations(local: Vec<Station>, remote: Vec<Station>) -> Vec<Station>
 
     merged.extend(remote_by_url.into_values());
 
-    merged.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    merged.sort_by_key(|a| a.name.to_lowercase());
 
     merged
 }
