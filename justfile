@@ -34,26 +34,4 @@ run-local:
 run-small:
     cargo run -- --ui-size small
 
-# Check warnings and cross-compile for all target platforms
-check-all:
-    cargo check --target x86_64-unknown-linux-gnu 2>&1
-    cargo check --target aarch64-unknown-linux-gnu 2>&1
-    cargo check --target x86_64-apple-darwin 2>&1
-    cargo check --target aarch64-apple-darwin 2>&1
-
-# Clippy with warnings for all target platforms
-clippy-all:
-    cargo clippy 2>&1
-    cargo clippy --target x86_64-unknown-linux-gnu 2>&1
-    cargo clippy --target aarch64-unknown-linux-gnu 2>&1
-    cargo clippy --target x86_64-apple-darwin 2>&1
-    cargo clippy --target aarch64-apple-darwin 2>&1
-
-# Build for all target platforms
-build-all:
-    cargo zigbuild --release --target x86_64-unknown-linux-gnu 2>&1
-    cargo zigbuild --release --target aarch64-unknown-linux-gnu 2>&1
-    cargo zigbuild --release --target x86_64-apple-darwin 2>&1
-    cargo zigbuild --release --target aarch64-apple-darwin 2>&1
-
 all:  build clippy fmt test
