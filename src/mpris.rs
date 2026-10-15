@@ -305,7 +305,7 @@ impl MediaPlayer2Player {
     }
 
     #[allow(clippy::unused_async)]
-    async fn seek(&self, offset: i64) -> Result<()> {
+    fn seek(&self, offset: i64) -> Result<()> {
         let _ = offset;
         Err(zbus::fdo::Error::NotSupported(
             "Seek not supported for radio streams".into(),
@@ -313,7 +313,7 @@ impl MediaPlayer2Player {
     }
 
     #[allow(clippy::unused_async)]
-    async fn set_position(&self, track_id: &str, position: i64) -> Result<()> {
+    fn set_position(&self, track_id: &str, position: i64) -> Result<()> {
         let _ = track_id;
         let _ = position;
         Err(zbus::fdo::Error::NotSupported(
